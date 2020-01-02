@@ -7,19 +7,20 @@
     "react-scripts": "3.3.0"
   },
   "dependencies": {
-    "autoprefixer-stylus": "0.14.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
+    "@vx/vx": "0.0.193-alpha.0",
+    "autoprefixer-stylus": "0.14.0",
     "firebase": "^6.6.2",
     "prop-types": "^15.6.0",
     "re-base": "^4.0.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-router-dom": "^4.2.2",
-    "react-transition-group": "^2.2.1",
     "react-scripts": "3.3.0",
-    "@vx/vx": "0.0.193-alpha.0"
+    "react-transition-group": "^2.2.1",
+    "spotify-web-api-js": "^1.2.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1,11 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 import base from "../base";
+import SpotifyFetch from "./SpotifyFetch";
+// import Songs from "../songs";
 
 class App extends React.Component {
   state = {
     songs: {},
-    order: {}
+    audioFeatureData: {},
+    artistData: {},
+    songData: {}
   };
 
   static propTypes = {
@@ -19,20 +23,21 @@ class App extends React.Component {
     });
   }
 
-  componentDidUpdate() {
-    console.log(this.state.songs);
-  }
+  componentDidUpdate() {}
 
   componentWillUnmount() {
     base.removeBinding(this.ref);
   }
 
   render() {
+    console.log(this.state.songs);
     return (
       <div>
         <div>
           <h1>AudioForma</h1>
-          <ul className="songs"></ul>
+        </div>
+        <div>
+          <SpotifyFetch />
         </div>
       </div>
     );
