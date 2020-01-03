@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import oAuth from "./oAuth";
+import React from "react";
+import Spotify from "spotify-web-api-js";
+import SpotifyWebApi from "spotify-web-api-js";
 
-const SpotifyFetch = () => {
-  return (
-    <nav className="login">
-      <h2>Authenticate with Spotify</h2>
-      <p>If you use Spotify, we can visualize your song library for you.</p>
-      <button className="spotify" onClick={oAuth()}>
-        Show me my Spotify Library!
-      </button>
-      <button className="noThanks">No Thanks</button>
-    </nav>
+class SpotifyFetch extends React.Component {
+  state = {
+    token : this.props.location.hash.split("=",2)[1]
+  }
+  spotifyApi = new SpotifyWebApi();
+
+  render(){
+    return (
+    this.state.token
   );
+  }
 };
 
 export default SpotifyFetch;

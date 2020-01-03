@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import base from "../base";
-import SpotifyFetch from "./SpotifyFetch";
+import Oauth from "./oAuth"
+// import SpotifyFetch from "./SpotifyFetch";
 // import Songs from "../songs";
 
 class App extends React.Component {
@@ -37,7 +38,7 @@ class App extends React.Component {
           <h1>AudioForma</h1>
         </div>
         <div>
-          <SpotifyFetch />
+          <Oauth />
         </div>
       </div>
     );
