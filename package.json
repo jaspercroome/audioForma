@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^7.2.1",
     "@vx/vx": "0.0.193-alpha.0",
     "autoprefixer-stylus": "0.14.0",
+    "axios": "^0.19.0",
     "firebase": "^6.6.2",
     "prop-types": "^15.6.0",
     "re-base": "^4.0.0",
