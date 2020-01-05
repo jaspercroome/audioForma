@@ -1,59 +1,60 @@
-import React from "react";
-import base from "../base";
+import React, {useState, useEffect} from "react";
+import songs from "../songs";
 import SpotifyWebApi from "spotify-web-api-js";
+import Bubble from "./Bubble"
 
-class SpotifyFetch extends React.Component {
-  state = {
-    songs: {},
-    token : this.props.location.hash.split("=",2)[1].split("&",1),
-    songData:{tracks:{},audioFeatures:{},playlistData:{}}
-  }
+function SpotifyFetch(){
+  const starterSongs = songs;
+  const token = window.location.hash.split("=",2)[1].split("&",1)[0]
+
+  const [savedTracks, setSavedTracks] = useState({})
+  const [tracks, setTracks] = useState({})
+  const [audioFeatures, setAudioFeatures] = useState([])
+  const [playlistData, setPlaylistData] = useState({})
 
 
-  componentDidMount(){
-    this.ref = base.syncState(`songs`, {
-      context: this,
-      state: "songs"
-    });
-    var spotify = new SpotifyWebApi();
-    spotify.setAccessToken(this.state.token[0])
-    // spotify.getUserPlaylists()
-    //   .then(data=>{
-    //     this.setState({
-    //       playlistData: data
-    //     })
-    //   })
-    //   .catch(error=>{console.log(error)})
-  }
-  
-  componentDidUpdate() {
-    var spotify = new SpotifyWebApi();
-    spotify.setAccessToken(this.state.token[0])
-    // spotify.getTracks(this.state.songs)
-    //   .then(data=>{
-    //     this.setState({
-    //       tracks: data
-    //     })
-    //   })
-    //   .catch(error=>{console.log(error)})
-    spotify.getAudioFeaturesForTracks(this.state.songs)
+    
+  const spotifyPlaylists = () => { var spotify = new SpotifyWebApi();
+    spotify.setAccessToken(token)
+    spotify.getUserPlaylists()
       .then(data=>{
-        this.setState({
-          audioFeatures: data['audio_features']
-        })
+        setPlaylistData(data)
       })
       .catch(error=>{console.log(error)})
-    }
-
-  componentWillUnmount() {
-    base.removeBinding(this.ref);
+  }
+  
+  const spotifyAudioFeatures = () => {
+    var spotify = new SpotifyWebApi();
+    spotify.setAccessToken(token)
+    spotify.getAudioFeaturesForTracks(starterSongs)
+    .then(data=>{
+      setAudioFeatures(data['audio_features'])
+    })
+    .catch(error=>{console.log(error)})
   }
 
-  render(){
+  const spotifyTracks = () => {
+    var spotify = new SpotifyWebApi();
+    spotify.setAccessToken(token)
+    spotify.getTracks(starterSongs)
+    .then(data=>{
+      setTracks(data['tracks'])
+    })
+    .catch(error=>{console.log(error)})
+  }
+
+  useEffect(() => {
+    spotifyTracks()
+    spotifyAudioFeatures()
+    spotifyPlaylists()
+    Bubble(tracks)
+  })
     return (
-      this.state.token
-  );
-  }
+      <div>
+        <p>Loading Data</p>
+      </div>
+      
+    );
 };
 
 export default SpotifyFetch;

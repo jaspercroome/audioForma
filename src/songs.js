@@ -32,3 +32,5 @@ const songs = [
   "2uXJcENP8l37SWwyjr0SGj",
   "7i6r9KotUPQg3ozKKgEPIN"
 ];
+
+export default songs;
