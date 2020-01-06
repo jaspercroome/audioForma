@@ -1,11 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Oauth from "./oAuth";
-// import SpotifyFetch from "./SpotifyFetch";
-// import Songs from "../songs";
+import SpotifyFetch from "./SpotifyFetch";
+import Bubble from "./Bubble";
 
 class App extends React.Component {
   state = {
+    token: window.location.hash
+      ? window.location.hash.split("=", 2)[1].split("&", 1)[0]
+      : "",
     songs: {},
     audioFeatureData: {},
     artistData: {},
@@ -16,21 +19,19 @@ class App extends React.Component {
     match: PropTypes.object
   };
 
-  componentDidMount() {
-  }
-
-  componentDidUpdate() {}
-
   render() {
     return (
-      <div>
-        <div>
-          <h1>AudioForma</h1>
-        </div>
-        <div>
+      <React.Fragment>
+        <h1>AudioForma</h1>
+        {this.state.token ? (
+          <React.Fragment>
+            <SpotifyFetch token={this.state.token} />
+            <Bubble />
+          </React.Fragment>
+        ) : (
           <Oauth />
-        </div>
-      </div>
+        )}
+      </React.Fragment>
     );
   }
 }
