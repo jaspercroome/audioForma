@@ -8,11 +8,7 @@ class App extends React.Component {
   state = {
     token: window.location.hash
       ? window.location.hash.split("=", 2)[1].split("&", 1)[0]
-      : "",
-    songs: {},
-    audioFeatureData: {},
-    artistData: {},
-    songData: {}
+      : ""
   };
 
   static propTypes = {
@@ -26,7 +22,7 @@ class App extends React.Component {
         {this.state.token ? (
           <React.Fragment>
             <SpotifyFetch token={this.state.token} />
-            <Bubble />
+            <Bubble data={this.state.audioFeatures} />
           </React.Fragment>
         ) : (
           <Oauth />
