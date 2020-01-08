@@ -1,21 +1,11 @@
-// import React, { useEffect } from "react";
-// import SpotifyAudioFeatures from "../actions/spotifyAudioFeatures";
-// import SpotifyTracks from "../actions/spotifyTracks";
-// import SpotifyPlaylists from "../actions/spotifyPlaylists";
+import React from "react";
+import useGlobal from "../store";
 
-// function SpotifyFetch(props) {
-//   const token = props.token;
+const SpotifyFetch = () => {
+  const [globalState, globalActions] = useGlobal();
+  globalActions.spotifyToken.spotifyToken();
+  globalActions.spotifyTracks.SpotifyTracks();
+  return <p>Loading Data...</p>;
+};
 
-//   useEffect(
-//     token => {
-//       SpotifyTracks(token);
-//       SpotifyAudioFeatures(token);
-//       SpotifyPlaylists(token);
-//     },
-//     [token]
-//   );
-
-//   return <p>Loading Data</p>;
-// }
-
-// export default SpotifyFetch;
+export default SpotifyFetch;
