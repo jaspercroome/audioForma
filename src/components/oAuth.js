@@ -1,7 +1,7 @@
 import React from "react";
 import Creds from "../creds";
 
-const OAuth = props => {
+export const OAuth = props => {
   const scopes = "user-library-read";
   const redirect_uri = "http://localhost:3000/callback/";
   const spotifyAuthUrl = `https://accounts.spotify.com/authorize/?client_id=${
@@ -26,4 +26,3 @@ const OAuth = props => {
     </nav>
   );
 };
-export default OAuth;

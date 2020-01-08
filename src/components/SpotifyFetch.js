@@ -1,18 +1,21 @@
-import React, { useEffect } from "react";
-import spotifyAudioFeatures from "./spotifyAudioFeatures";
-import spotifyTracks from "./spotifyTracks";
-import spotifyPlaylists from "./spotifyPlaylists";
+// import React, { useEffect } from "react";
+// import SpotifyAudioFeatures from "../actions/spotifyAudioFeatures";
+// import SpotifyTracks from "../actions/spotifyTracks";
+// import SpotifyPlaylists from "../actions/spotifyPlaylists";
 
-function SpotifyFetch(props) {
-  const token = props.token;
+// function SpotifyFetch(props) {
+//   const token = props.token;
 
-  useEffect(() => {
-    spotifyTracks();
-    spotifyAudioFeatures();
-    spotifyPlaylists();
-  });
+//   useEffect(
+//     token => {
+//       SpotifyTracks(token);
+//       SpotifyAudioFeatures(token);
+//       SpotifyPlaylists(token);
+//     },
+//     [token]
+//   );
 
-  return <p>Loading Data</p>;
-}
+//   return <p>Loading Data</p>;
+// }
 
-export default SpotifyFetch;
+// export default SpotifyFetch;

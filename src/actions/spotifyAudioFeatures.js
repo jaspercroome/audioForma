@@ -1,21 +1,20 @@
-import useState from "react";
+import { useState } from "react";
 import songs from "../songs";
 import SpotifyWebApi from "spotify-web-api-js";
 
 const starterSongs = songs;
-const [tracks, setTracks] = useState({});
 
-const spotifyTracks = token => {
+export const SpotifyAudioFeatures = token => {
+  const [audioFeatures, setAudioFeatures] = useState([]);
   var spotify = new SpotifyWebApi();
   spotify.setAccessToken(token);
   spotify
-    .getTracks(starterSongs)
+    .getAudioFeaturesForTracks(starterSongs)
     .then(data => {
-      setTracks(data["tracks"]);
+      setAudioFeatures(data["audio_features"]);
     })
     .catch(error => {
       console.log(error);
     });
+  console.log("Audio Features");
 };
-
-export default spotifyTracks;

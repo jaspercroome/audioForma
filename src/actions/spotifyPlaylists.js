@@ -1,9 +1,8 @@
 import { useState } from "react";
 import SpotifyWebApi from "spotify-web-api-js";
 
-const [playlistData, setPlaylistData] = useState({});
-
-const spotifyPlaylists = token => {
+export const SpotifyPlaylists = token => {
+  const [playlistData, setPlaylistData] = useState({});
   var spotify = new SpotifyWebApi();
   spotify.setAccessToken(token);
   spotify
@@ -14,6 +13,5 @@ const spotifyPlaylists = token => {
     .catch(error => {
       console.log(error);
     });
+  console.log("Playlists");
 };
-
-export default spotifyPlaylists;
