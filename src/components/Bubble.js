@@ -1,45 +1,63 @@
 import React, { useEffect } from "react";
-import useGlobal from "../store"
+import useGlobal from "../store";
 import { Group } from "@vx/group";
 import { Circle } from "@vx/shape";
-import { GradientPinkRed } from "@vx/gradient";
 import { scaleLinear } from "@vx/scale";
-import { genRandomNormalPoints } from "@vx/mock-data";
-import { withTooltip, Tooltip } from "@vx/tooltip";
+// import { withTooltip, Tooltip } from "@vx/tooltip";
 
-const Bubble = store => {
-  const [globalState, globalActions] = useGlobal()
-  const bubbles = [globalState.audioFeatures];
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+const Bubble = (store, props) => {
+  const width = window.innerWidth * 0.98;
+  const height = window.innerHeight * 0.98;
+
+  const [globalState, globalActions] = useGlobal();
+
   const xScale = scaleLinear({
     domain: [0, 1],
-    range: [0, width]
+    range: [0, width],
+    clamp: true
   });
   const yScale = scaleLinear({
     domain: [0, 1],
-    range: [height, 0]
+    range: [height, 0],
+    clamp: true
   });
+  // let tooltipTimeout;
 
-  const spotifyFetch = () =>{ globalActions.spotifyToken.spotifyToken()
-}
+  const spotifyFetch = () => {
+    globalActions.spotifyToken.getToken();
+  };
+  const spotifyAudioFeatures = () => {
+    globalActions.spotifyAudioFeatures.getAF();
+  };
+  const spotifyPlaylists = () => {
+    globalActions.spotifyPlaylists.getPlaylists();
+  };
+  const spotifyTracks = () => {
+    globalActions.spotifyTracks.getTracks();
+  };
+  const token = globalState.token;
 
+  spotifyFetch();
+  useEffect(() => {
+    spotifyAudioFeatures();
+    spotifyPlaylists();
+    spotifyTracks();
+    // spotifyArtists();
+  }, [token]);
 
-spotifyFetch()
-useEffect(()=>{console.log(globalActions)},[globalState.token])
-
+  const [bubbles] = [globalState.audioFeatures];
   return (
     <div>
       <svg width={width} height={height}>
         <rect width={width} height={height} />
         <Group>
-          {bubbles.map(track => {
-            const cx = xScale(2);
-            const cy = yScale(2);
-            const r = 1;
+          {bubbles.map((track, i) => {
+            const cx = xScale(track.valence);
+            const cy = yScale(track.danceability);
+            const r = 14;
             return (
               <Circle
-                key={`track-${2}`}
+                key={`track-${track.id}`}
                 className="dot"
                 cx={cx}
                 cy={cy}

@@ -1,6 +1,5 @@
 import React from "react";
 import { OAuth } from "./oAuth";
-import SpotifyFetch from "../actions/spotifyFetch";
 import Bubble from "./Bubble";
 
 class App extends React.Component {
