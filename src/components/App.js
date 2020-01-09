@@ -1,6 +1,6 @@
 import React from "react";
 import { OAuth } from "./oAuth";
-import SpotifyFetch from "./SpotifyFetch";
+import SpotifyFetch from "../actions/spotifyFetch";
 import Bubble from "./Bubble";
 
 class App extends React.Component {
@@ -10,7 +10,6 @@ class App extends React.Component {
         <h1>AudioForma</h1>
         {window.location.hash ? (
           <React.Fragment>
-            <SpotifyFetch />
             <Bubble />
           </React.Fragment>
         ) : (

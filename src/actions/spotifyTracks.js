@@ -3,18 +3,19 @@ import SpotifyWebApi from "spotify-web-api-js";
 
 const starterSongs = songs;
 
-export const SpotifyTracks = store => {
-  const token = store.state.token;
-  const newTracks = { ...store.state.tracks };
+export const spotifyTracks = async (store) => {
+  // const token = store.state.token;
+  const newTracks = [];
   var spotify = new SpotifyWebApi();
-  spotify.setAccessToken(token);
-  spotify
-    .getTracks(starterSongs)
-    .then(data => {
-      newTracks.push(data);
-      store.setState({ tracks: newTracks });
-    })
-    .catch(error => {
-      console.log(error);
-    });
+  spotify.setAccessToken(store.state.token);
+  // try {
+  // //   // const data = await spotify.getTracks(starterSongs)
+  //   const data = await ['1','2','3']
+  //   newTracks.push(data)
+  //   store.setState({ tracks: newTracks });
+  //   }
+  // catch (error) {
+  //   console.log(error);
+  // }
+    console.log('tracks!')
 };

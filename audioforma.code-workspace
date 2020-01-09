@@ -1,13 +1,10 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "/Users/Jasparr/Documents/GitHub/React-For-Beginners-Starter-Files"
-		},
-		{
-			"path": "/Users/Jasparr/Documents/GitHub/songshape_app"
-		}
-	]
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "/Users/jcroom/Documents/GitHub/songshape_app"
+        }
+    ]
 }
