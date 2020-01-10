@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import useGlobal from "../store";
 import { Group } from "@vx/group";
 import { Circle } from "@vx/shape";
-import { scaleLinear } from "@vx/scale";
+import { scaleLinear, scaleOrdinal, scaleQuantize } from "@vx/scale";
 // import { withTooltip, Tooltip } from "@vx/tooltip";
 
 const Bubble = (store, props) => {
@@ -21,13 +21,34 @@ const Bubble = (store, props) => {
     range: [height, 0],
     clamp: true
   });
+
+  // var lookup = {};
+  // var artistArray = [];
+
+  // for (var item, i = 0; (item = globalState.trackData[i++]); ) {
+  //   var name = item["artist"][0]["name"];
+
+  //   if (!(name in lookup)) {
+  //     lookup[name] = 1;
+  //     artistArray.push(name);
+  //   }
+  // }
+  // var artistIndexArray = [];
+  // // map the artist index to a matching array, for the range in the color scale.
+  // for (i = 0; i < artistArray.length; i++) {
+  //   artistIndexArray.push(i / artistArray.length);
+  // }
+
+  // const artistScale = scaleOrdinal({
+  //   domain: artistArray,
+  //   range: artistIndexArray,
+  //   clamp: true
+  // });
+
   // let tooltipTimeout;
 
   const spotifyFetch = () => {
     globalActions.spotifyToken.getToken();
-  };
-  const spotifyAudioFeatures = () => {
-    globalActions.spotifyAudioFeatures.getAF();
   };
   const spotifyPlaylists = () => {
     globalActions.spotifyPlaylists.getPlaylists();
@@ -39,13 +60,11 @@ const Bubble = (store, props) => {
 
   spotifyFetch();
   useEffect(() => {
-    spotifyAudioFeatures();
     spotifyPlaylists();
     spotifyTracks();
-    // spotifyArtists();
   }, [token]);
 
-  const [bubbles] = [globalState.audioFeatures];
+  const [bubbles] = [globalState.trackData];
   return (
     <div>
       <svg width={width} height={height}>
@@ -57,7 +76,7 @@ const Bubble = (store, props) => {
             const r = 14;
             return (
               <Circle
-                key={`track-${track.id}`}
+                key={`track-${track["name"]}`}
                 className="dot"
                 cx={cx}
                 cy={cy}

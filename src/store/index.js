@@ -5,9 +5,7 @@ import * as actions from "../actions";
 
 const initialState = {
   token: "",
-  tracks: [],
-  playlists: [],
-  audioFeatures: []
+  trackData: []
 };
 
 const useGlobal = useGlobalHook(React, initialState, actions);
