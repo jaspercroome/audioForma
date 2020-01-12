@@ -1,5 +1,4 @@
 import SpotifyWebApi from "spotify-web-api-js";
-// import from "lodash"
 
 export const getTracks = async store => {
   const token = store.state.token;
@@ -59,8 +58,10 @@ export const getTracks = async store => {
     const trackData = merge(newTracks, newAudioFeatures);
 
     store.setState({
-      trackData: trackData
+      trackData: trackData,
+      status: "loaded"
     });
+    console.log("trrracks");
   } catch (error) {
     console.log(error);
   }

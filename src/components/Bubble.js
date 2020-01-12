@@ -3,12 +3,11 @@ import useGlobal from "../store";
 import { Group } from "@vx/group";
 import { Circle } from "@vx/shape";
 import { scaleLinear, scaleOrdinal } from "@vx/scale";
-import {Pack, hierarchy} from "@vx/hierarchy"
 import { interpolateRainbow } from "d3-scale-chromatic";
-import {scaleSequential} from "d3-scale"
-import { exoplanets } from '@vx/mock-data';
+import { scaleSequential } from "d3-scale";
+import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
 // import { withTooltip, Tooltip } from "@vx/tooltip";
-console.log(exoplanets)
+
 const Bubble = (store, props) => {
   const width = window.innerWidth * 0.98;
   const height = window.innerHeight * 0.98;
@@ -26,10 +25,11 @@ const Bubble = (store, props) => {
     clamp: true
   });
 
+  //Color Scale
   var lookup = {};
   var artistArray = [];
 
-  for (var item, i = 0; (item = globalState.trackData[i++]);) {
+  for (var item, i = 0; (item = globalState.trackData[i++]); ) {
     var name = item["artists"][0]["name"];
 
     if (!(name in lookup)) {
@@ -42,13 +42,14 @@ const Bubble = (store, props) => {
   for (i = 0; i < artistArray.length; i++) {
     artistIndexArray.push(i / artistArray.length);
   }
-  const color = scaleSequential(interpolateRainbow)
+  const color = scaleSequential(interpolateRainbow);
 
   const artistScale = scaleOrdinal({
     domain: artistArray,
     range: artistIndexArray,
     clamp: true
   });
+  //
 
   // let tooltipTimeout;
 
@@ -62,22 +63,43 @@ const Bubble = (store, props) => {
     globalActions.spotifyTracks.getTracks();
   };
   const token = globalState.token;
+  const [bubbles] = [globalState.trackData];
 
-  spotifyFetch();
+  useEffect(() => {
+    spotifyFetch();
+  }, [props]);
+
   useEffect(() => {
     spotifyPlaylists();
     spotifyTracks();
   }, [token]);
 
-  const [bubbles] = [globalState.trackData];
-  const placeholder = 'data'
-  const root = hierarchy(placeholder,bubbles)
-  .sum(d=>d.length * d.length)
-  .sort((a, b) => {
-    return (a.valence - b.valence)
-    })
-  console.log(bubbles)
-  console.log(root)
+  useEffect(() => {
+    simulation.nodes(bubbles);
+  }, [globalState.trackData]);
+
+  const simulation = forceSimulation()
+    .force(
+      "x",
+      forceX(d => {
+        return xScale(d["valence"]);
+      })
+    )
+    .force(
+      "y",
+      forceY(d => {
+        return yScale(0.5);
+      })
+    )
+    .force(
+      "collide",
+      forceCollide(d => {
+        return (0.5 / 100) * width + 5;
+      })
+    );
+
+  // simulation.nodes(bubbles);
+
   return (
     <div>
       <svg width={width} height={height}>
@@ -85,22 +107,22 @@ const Bubble = (store, props) => {
         {/* <Pack root={bubbles} size={[width,height]}> */}
         <Group>
           {bubbles.map((track, i) => {
-            const cx = xScale(track.valence);
-            const cy = yScale(track.danceability);
-            const fill = color(artistScale(track['artists'][0]['name']))
+            const cx = track.x;
+            const cy = track.y;
+            const fill = color(artistScale(track["artists"][0]["name"]));
             // const r = 14;
             return (
               <Circle
-              key={`track-${track["name"]}${track["id"]}`}
-              className="dot"
-              cx={cx}
-              cy={cy}
-              r=".5vw"
-              stroke="white"
-              fill={fill}
+                key={`track-${track["name"]}${track["id"]}`}
+                className="dot"
+                cx={cx}
+                cy={cy}
+                r=".5vw"
+                stroke="white"
+                fill={fill}
               />
-              );
-            })}
+            );
+          })}
         </Group>
         {/* </Pack> */}
       </svg>
