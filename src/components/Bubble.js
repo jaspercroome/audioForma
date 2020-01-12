@@ -3,7 +3,7 @@ import useGlobal from "../store";
 import { Group } from "@vx/group";
 import { Circle } from "@vx/shape";
 import { scaleLinear, scaleOrdinal } from "@vx/scale";
-import {Pack} from "@vx/hierarchy"
+import {Pack, hierarchy} from "@vx/hierarchy"
 import { interpolateRainbow } from "d3-scale-chromatic";
 import {scaleSequential} from "d3-scale"
 import { exoplanets } from '@vx/mock-data';
@@ -70,6 +70,14 @@ const Bubble = (store, props) => {
   }, [token]);
 
   const [bubbles] = [globalState.trackData];
+  const placeholder = 'data'
+  const root = hierarchy(placeholder,bubbles)
+  .sum(d=>d.length * d.length)
+  .sort((a, b) => {
+    return (a.valence - b.valence)
+    })
+  console.log(bubbles)
+  console.log(root)
   return (
     <div>
       <svg width={width} height={height}>
@@ -83,7 +91,7 @@ const Bubble = (store, props) => {
             // const r = 14;
             return (
               <Circle
-              key={`track-${track["name"]}`}
+              key={`track-${track["name"]}${track["id"]}`}
               className="dot"
               cx={cx}
               cy={cy}
