@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, setState } from "react";
 import useGlobal from "../store";
 // import rainbowScale from "./rainbowScale";
 import { interpolateRainbow } from "d3-scale-chromatic";
 import { scaleSequential, scaleLinear, scaleOrdinal } from "d3-scale";
-import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
 import { select } from "d3-selection";
 
 const Bubble = (store, props) => {
@@ -11,6 +10,13 @@ const Bubble = (store, props) => {
   const height = window.innerHeight * 0.9;
   const [globalState, globalActions] = useGlobal();
   const d3BubblesContainer = useRef(null);
+
+  const xScale = scaleLinear()
+    .domain([0, 1])
+    .range([0, width]);
+  const yScale = scaleLinear()
+    .domain([0, 1])
+    .range([height, 0]);
 
   //Color Scale
   var lookup = {};
@@ -36,13 +42,6 @@ const Bubble = (store, props) => {
     .range(artistIndexArray);
   //
 
-  const xScale = scaleLinear()
-    .domain([0, 1])
-    .range([0, width]);
-  const yScale = scaleLinear()
-    .domain([0, 1])
-    .range([height, 0]);
-
   const spotifyFetch = () => {
     globalActions.spotifyToken.getToken();
   };
@@ -53,18 +52,12 @@ const Bubble = (store, props) => {
     globalActions.spotifyTracks.getTracks();
   };
   const token = globalState.token;
+  const d3Data = globalState.d3Data;
   const [bubbles] = [globalState.trackData];
 
-  const simulation = forceSimulation()
-    .force(
-      "x",
-      forceX(d => {
-        return xScale(d["valence"]);
-      })
-    )
-    .force("y", forceY(yScale(0.5)))
-    .force("collide", forceCollide((0.5 / 100) * width + 5));
-  simulation.nodes(bubbles);
+  const simulation = () => {
+    globalActions.forceCollide.simulation();
+  };
 
   useEffect(() => {
     spotifyFetch();
@@ -76,39 +69,47 @@ const Bubble = (store, props) => {
   }, [token]);
 
   useEffect(() => {
-    if (bubbles.length && d3BubblesContainer.current) {
-      console.log(bubbles);
+    simulation();
+  }, [bubbles]);
+
+  useEffect(() => {
+    if (d3Data && d3BubblesContainer.current) {
+      console.log(d3Data);
 
       const svg = select(d3BubblesContainer.current);
 
       svg
         .append("g")
         .selectAll("circle")
-        .data(bubbles, d => d)
+        .data(d3Data, d => d)
         .join(
-          enter => enter.append("circle"),
-          update =>
-            update
+          enter =>
+            enter
+              .append("circle")
+              .attr("class", "bubble")
               .attr("cx", d => {
-                return d.x;
+                return d["x"];
               })
               .attr("cy", d => {
-                return d.y;
-              }),
+                return d["y"];
+              })
+              .attr("r", ".5vw")
+              .attr("fill", d => {
+                return color(artistScale(d["artists"][0]["name"]));
+              })
+              .attr("stroke", "white"),
+          // update =>
+          // update
+          //   .attr("cx", d => {
+          //     return d["x"];
+          //   })
+          //   .attr("cy", d => {
+          //     return d["y"];
+          //   }),
           exit => exit.remove()
-        )
-        .attr("cx", d => {
-          return d.x;
-        })
-        .attr("cy", d => {
-          return d.y;
-        })
-        .attr("r", ".5vw")
-        .attr("fill", d => {
-          return color(artistScale(d["artists"][0]["name"]));
-        });
+        );
     }
-  }, [bubbles, d3BubblesContainer.current]);
+  }, [d3Data, d3BubblesContainer.current]);
 
   return (
     <div>
