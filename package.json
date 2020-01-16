@@ -17,6 +17,7 @@
     "d3-scale": "^3.2.1",
     "d3-scale-chromatic": "^1.5.0",
     "d3-selection": "^1.4.1",
+    "@vx/vx": "0.0.193-alpha.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-router-dom": "^4.2.2",

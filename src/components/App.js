@@ -1,6 +1,6 @@
 import React from "react";
 import { OAuth } from "./oAuth";
-import Bubble from "./Bubble";
+import Bubble from "./Bubble2";
 
 class App extends React.Component {
   render() {

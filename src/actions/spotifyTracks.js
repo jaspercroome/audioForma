@@ -1,12 +1,13 @@
 import SpotifyWebApi from "spotify-web-api-js";
 
-export const getTracks = async store => {
-  const token = store.state.token;
+export const getTracks = async creds => {
+  const token = creds;
   const newTracks = [];
   const newAudioFeatures = [];
   let spotify = new SpotifyWebApi();
   spotify.setAccessToken(token);
   try {
+    console.log(creds);
     const limit = 50;
     var offset = 0;
     var total = Infinity;
@@ -57,11 +58,7 @@ export const getTracks = async store => {
 
     const trackData = merge(newTracks, newAudioFeatures);
 
-    store.setState({
-      trackData: trackData,
-      status: "loaded"
-    });
-    console.log("trrracks");
+    return trackData;
   } catch (error) {
     console.log(error);
   }
