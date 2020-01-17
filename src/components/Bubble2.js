@@ -16,23 +16,23 @@ class Bubble extends Component {
     tracks: {},
     d3Data: {}
   };
+  constructor(props) {
+    super(props);
+    this.state = {
+      token: window.location.hash.split("=", 2)[1].split("&", 1)[0]
+    };
+  }
 
-  componentWillMount() {
-    spotifyToken.getToken().then(token => {
-      this.setState({ token: token });
+  componentDidMount() {
+    spotifyTracks.getTracks(this.state.token).then(tracks => {
+      this.setState({ tracks: tracks });
     });
   }
   componentDidUpdate() {
-    const token = this.state.token;
-    spotifyTracks
-      .getTracks(token)
-      .then(tracks => {
-        this.setState({ tracks: tracks });
-      })
-      .then(forceCollide.simulation(this.state.tracks))
-      .then(data => {
-        this.setState({ d3Data: data });
-      });
+    forceCollide.simulation(this.state.tracks).then(data => {
+      // this.setState({ d3Data: data });
+      console.log(data);
+    });
   }
 
   render() {

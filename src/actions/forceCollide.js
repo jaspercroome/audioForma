@@ -2,6 +2,7 @@ import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
 import { scaleLinear } from "d3-scale";
 
 export const simulation = async tracks => {
+  // console.log(tracks);
   const width = window.innerWidth * 0.75;
   const height = window.innerHeight * 0.9;
   const items = tracks;
