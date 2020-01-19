@@ -1,15 +1,13 @@
 {
   "folders": [
     {
-      "name": "audioforma",
-      "path": "/Users/Jasper/Documents/GitHub/audioforma"
+      "path": "."
     },
     {
-      "name": "React-For-Beginners-Starter-Files",
-      "path": "/Users/Jasper/Documents/GitHub/React-For-Beginners-Starter-Files"
+      "path": "/Users/jcroom/Documents/GitHub/React-For-Beginners-Starter-Files"
     },
     {
-      "path": "/Users/Jasper/Documents/GitHub/songShape"
+      "path": "/Users/jcroom/Documents/GitHub/SongShape"
     }
   ]
 }
