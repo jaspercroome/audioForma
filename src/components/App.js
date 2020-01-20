@@ -1,6 +1,7 @@
 import React from "react";
 import { OAuth } from "./oAuth";
-import Bubble from "./Bubble2";
+import Bubble from "./Bubble";
+import FormControl from "./FormControl";
 
 class App extends React.Component {
   render() {
@@ -10,6 +11,7 @@ class App extends React.Component {
         {window.location.hash ? (
           <React.Fragment>
             <Bubble />
+            <FormControl />
           </React.Fragment>
         ) : (
           <OAuth />

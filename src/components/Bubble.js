@@ -1,98 +1,214 @@
-import React, { useEffect, useRef } from "react";
-import useGlobal from "../store";
+import React, { Component } from "react";
+import { spotifyTracks } from "../actions";
 // import rainbowScale from "./rainbowScale";
 import { interpolateRainbow } from "d3-scale-chromatic";
-import { scaleSequential, scaleOrdinal } from "d3-scale";
-// import { select } from "d3-selection";
+import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
+import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
+
+import { AxisBottom } from "@vx/axis";
 import { Group } from "@vx/group";
-import { Circle } from "@vx/shape";
+import { Circle, Line } from "@vx/shape";
 
-const Bubble = (store, props) => {
-  const width = window.innerWidth * 0.75;
-  const height = window.innerHeight * 0.9;
-  const [globalState, globalActions] = useGlobal();
+class Bubble extends Component {
+  constructor(props) {
+    super(props);
+    const token = window.location.hash.split("=", 2)[1].split("&", 1)[0];
+    const tempWidth = window.innerWidth;
+    const tempHeight = window.innerHeight;
+    const margin = {
+      top: tempHeight * 0.1,
+      bottom: tempHeight * 0.1,
+      left: tempWidth * 0.1,
+      right: tempWidth * 0.1
+    };
+    const width = tempWidth - (margin.left + margin.right);
+    const height = tempHeight - (margin.top + margin.bottom);
+    const xScale = scaleLinear([0, 1], [0, width]);
+    const yScale = scaleLinear([0, 1], [height, 0]);
 
-  //Color Scale
-  var lookup = {};
-  var artistArray = [];
+    const numTicksForWidth = width => {
+      if (width <= 300) return 2;
+      if (300 < width && width <= 400) return 5;
+      return 10;
+    };
 
-  for (var item, i = 0; (item = globalState.trackData[i++]); ) {
-    var name = item["artists"][0]["name"];
+    const sortBy = "valence";
 
-    if (!(name in lookup)) {
-      lookup[name] = 1;
-      artistArray.push(name);
+    this.state = {
+      d3Status: "Not Started",
+      token: token,
+      width: width,
+      height: height,
+      margin: margin,
+      accessors: {
+        xScale: xScale,
+        yScale: yScale,
+        numTicksForWidth: numTicksForWidth,
+        sortBy: sortBy
+      },
+      tracks: {}
+    };
+  }
+
+  componentDidMount() {
+    const getTracks = token => {
+      spotifyTracks.getTracks(this.state.token).then(tracks => {
+        this.setState({ tracks: tracks });
+        this.setState({ d3Status: "pending" });
+      });
+    };
+    getTracks();
+  }
+
+  componentDidUpdate() {
+    if (this.state.d3Status === "pending") {
+      const data = this.state.tracks;
+      const xScale = this.state.accessors.xScale;
+      const yScale = this.state.accessors.yScale;
+      const sortBy = this.state.accessors.sortBy;
+      const width = this.state.width;
+      const height = this.state.height;
+
+      const radius = (height, width) => {
+        return height > width ? height * 0.1 : width * 0.1;
+      };
+
+      const move = forceSimulation()
+        .force(
+          "x",
+          forceX(d => {
+            return xScale(d[sortBy]);
+          }).strength(0.1)
+        )
+        .force(
+          "y",
+          forceY(d => {
+            return yScale(0.5);
+          }).strength(0.1)
+        )
+        .force(
+          "collide",
+          forceCollide(d => {
+            return (1.2 / 100) * width;
+          }).iterations(10)
+        );
+      move.nodes(data).on("tick", tracks => {
+        this.setState({ d3Data: tracks });
+      });
+      this.setState({ d3Status: "Completed" });
     }
   }
-  var artistIndexArray = [];
-  // map the artist index to a matching array, for the range in the color scale.
-  for (i = 0; i < artistArray.length; i++) {
-    artistIndexArray.push(i / artistArray.length);
+
+  render() {
+    const width = this.state.width;
+    const height = this.state.height;
+    const xScale = this.state.accessors.xScale;
+    const numTicksForWidth = this.state.accessors.numTicksForWidth;
+    const margin = this.state.margin;
+    const d3Data = Array.from(this.state.tracks);
+    const sortBy = this.state.accessors.sortBy;
+
+    //Color Scale
+    var lookup = {};
+    var artistArray = [];
+
+    for (var item, i = 0; (item = d3Data[i++]); ) {
+      var name = item["artists"][0]["name"];
+
+      if (!(name in lookup)) {
+        lookup[name] = 1;
+        artistArray.push(name);
+      }
+    }
+    var artistIndexArray = [];
+    // map the artist index to a matching array, for the range in the color scale.
+    for (i = 0; i < artistArray.length; i++) {
+      artistIndexArray.push(i / artistArray.length);
+    }
+    const color = scaleSequential(interpolateRainbow);
+
+    const artistScale = scaleOrdinal()
+      .domain(artistArray)
+      .range(artistIndexArray);
+    //
+
+    return (
+      <div>
+        <svg width={width} height={height}>
+          <Group>
+            if (this.state.d3Status !== 'Completed')
+            {d3Data.map((track, i) => {
+              const cx = track["x"];
+              const cy = track["y"];
+              const r = (1 / 100) * width; // equivalent of .5vw
+              const fill = color(artistScale(track["artists"][0]["name"]));
+              return (
+                <Circle
+                  key={`point-${track["id"]}-${track["name"]}`}
+                  className="dot"
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={fill}
+                  opacity=".8"
+                />
+              );
+            })}
+            <AxisBottom
+              top={height - margin.bottom * 3}
+              left={0}
+              scale={xScale}
+              numTicks={numTicksForWidth(width)}
+              label={sortBy}
+            >
+              {axis => {
+                const tickLabelSize = 12;
+                const tickRotate = 45;
+                const tickColor = "white";
+                const axisCenter =
+                  (axis.axisToPoint.x - axis.axisFromPoint.x) / 2;
+                return (
+                  <g className="my-custom-bottom-axis">
+                    {axis.ticks.map((tick, i) => {
+                      const tickX = tick.to.x;
+                      const tickY = tick.to.y + tickLabelSize + axis.tickLength;
+                      return (
+                        <Group
+                          key={`vx-tick-${tick.value}-${i}`}
+                          className={"vx-axis-tick"}
+                        >
+                          <Line
+                            from={tick.from}
+                            to={tick.to}
+                            stroke={tickColor}
+                          />
+                          <text
+                            transform={`translate(${tickX}, ${tickY}) rotate(${tickRotate})`}
+                            fontSize={tickLabelSize}
+                            textAnchor="middle"
+                            fill={tickColor}
+                          >
+                            {tick.formattedValue}
+                          </text>
+                        </Group>
+                      );
+                    })}
+                    <text
+                      textAnchor="middle"
+                      transform={`translate(${axisCenter}, 50)`}
+                      fontSize="12"
+                      fontColor="white"
+                    >
+                      {axis.label}
+                    </text>
+                  </g>
+                );
+              }}
+            </AxisBottom>
+          </Group>
+        </svg>
+      </div>
+    );
   }
-  const color = scaleSequential(interpolateRainbow);
-
-  const artistScale = scaleOrdinal()
-    .domain(artistArray)
-    .range(artistIndexArray);
-  //
-
-  const spotifyFetch = () => {
-    globalActions.spotifyToken.getToken();
-  };
-  const spotifyPlaylists = () => {
-    globalActions.spotifyPlaylists.getPlaylists();
-  };
-  const spotifyTracks = () => {
-    globalActions.spotifyTracks.getTracks();
-  };
-  const token = globalState.token;
-  const [bubbles] = [globalState.trackData];
-  var d3Data = [globalState.d3Data] || [""];
-
-  const simulation = () => {
-    globalActions.forceCollide.simulation();
-  };
-
-  component;
-
-  useEffect(() => {
-    spotifyFetch();
-  }, [props]);
-
-  useEffect(() => {
-    token !== ""
-      ? // spotifyPlaylists();
-        spotifyTracks()
-      : console.log("waiting");
-  }, [token]);
-
-  useEffect(() => {
-    globalState.status === "loaded" ? simulation() : console.log("waiting");
-  }, [bubbles]);
-
-  return (
-    <div>
-      <svg width={width} height={height}>
-        <Group>
-          {d3Data.map((track, i) => {
-            const cx = track["x"];
-            const cy = track["y"];
-            const r = (0.5 / 100) * width; // equivalent of .5vw
-            const fill = color(artistScale(track["artists"][0]["name"]));
-            return (
-              <Circle
-                key={`point-${track["id"]}-${track["name"]}`}
-                className="dot"
-                cx={cx}
-                cy={cy}
-                r={r}
-                fill={fill}
-              />
-            );
-          })}
-        </Group>
-      </svg>
-    </div>
-  );
-};
+}
 export default Bubble;
