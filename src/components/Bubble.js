@@ -7,7 +7,9 @@ import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
 
 import { AxisBottom } from "@vx/axis";
 import { Group } from "@vx/group";
-import { Circle, Line } from "@vx/shape";
+import { Circle, LinePath } from "@vx/shape";
+
+import FormControl from "./FormControl";
 
 class Bubble extends Component {
   constructor(props) {
@@ -18,21 +20,16 @@ class Bubble extends Component {
     const margin = {
       top: tempHeight * 0.1,
       bottom: tempHeight * 0.1,
-      left: tempWidth * 0.1,
-      right: tempWidth * 0.1
+      left: tempWidth * 0.05,
+      right: tempWidth * 0.05
     };
     const width = tempWidth - (margin.left + margin.right);
     const height = tempHeight - (margin.top + margin.bottom);
     const xScale = scaleLinear([0, 1], [0, width]);
     const yScale = scaleLinear([0, 1], [height, 0]);
-
-    const numTicksForWidth = width => {
-      if (width <= 300) return 2;
-      if (300 < width && width <= 400) return 5;
-      return 10;
-    };
-
     const sortBy = "valence";
+
+    // const sortBy = this.props.sortBy;
 
     this.state = {
       d3Status: "Not Started",
@@ -40,12 +37,9 @@ class Bubble extends Component {
       width: width,
       height: height,
       margin: margin,
-      accessors: {
-        xScale: xScale,
-        yScale: yScale,
-        numTicksForWidth: numTicksForWidth,
-        sortBy: sortBy
-      },
+      xScale: xScale,
+      yScale: yScale,
+      sortBy: sortBy,
       tracks: {}
     };
   }
@@ -63,9 +57,9 @@ class Bubble extends Component {
   componentDidUpdate() {
     if (this.state.d3Status === "pending") {
       const data = this.state.tracks;
-      const xScale = this.state.accessors.xScale;
-      const yScale = this.state.accessors.yScale;
-      const sortBy = this.state.accessors.sortBy;
+      const xScale = this.state.xScale;
+      const yScale = this.state.yScale;
+      const sortBy = this.state.sortBy;
       const width = this.state.width;
       const height = this.state.height;
 
@@ -99,14 +93,15 @@ class Bubble extends Component {
     }
   }
 
+  handleSortByChange = sortBy => {
+    this.setState({ sortBy: sortBy });
+    this.setState({ d3Status: "pending" });
+  };
+
   render() {
     const width = this.state.width;
     const height = this.state.height;
-    const xScale = this.state.accessors.xScale;
-    const numTicksForWidth = this.state.accessors.numTicksForWidth;
-    const margin = this.state.margin;
     const d3Data = Array.from(this.state.tracks);
-    const sortBy = this.state.accessors.sortBy;
 
     //Color Scale
     var lookup = {};
@@ -154,59 +149,12 @@ class Bubble extends Component {
                 />
               );
             })}
-            <AxisBottom
-              top={height - margin.bottom * 3}
-              left={0}
-              scale={xScale}
-              numTicks={numTicksForWidth(width)}
-              label={sortBy}
-            >
-              {axis => {
-                const tickLabelSize = 12;
-                const tickRotate = 45;
-                const tickColor = "white";
-                const axisCenter =
-                  (axis.axisToPoint.x - axis.axisFromPoint.x) / 2;
-                return (
-                  <g className="my-custom-bottom-axis">
-                    {axis.ticks.map((tick, i) => {
-                      const tickX = tick.to.x;
-                      const tickY = tick.to.y + tickLabelSize + axis.tickLength;
-                      return (
-                        <Group
-                          key={`vx-tick-${tick.value}-${i}`}
-                          className={"vx-axis-tick"}
-                        >
-                          <Line
-                            from={tick.from}
-                            to={tick.to}
-                            stroke={tickColor}
-                          />
-                          <text
-                            transform={`translate(${tickX}, ${tickY}) rotate(${tickRotate})`}
-                            fontSize={tickLabelSize}
-                            textAnchor="middle"
-                            fill={tickColor}
-                          >
-                            {tick.formattedValue}
-                          </text>
-                        </Group>
-                      );
-                    })}
-                    <text
-                      textAnchor="middle"
-                      transform={`translate(${axisCenter}, 50)`}
-                      fontSize="12"
-                      fontColor="white"
-                    >
-                      {axis.label}
-                    </text>
-                  </g>
-                );
-              }}
-            </AxisBottom>
           </Group>
         </svg>
+        <FormControl
+          sortBy={this.state.sortBy}
+          handleSortByChange={this.handleSortByChange}
+        />
       </div>
     );
   }

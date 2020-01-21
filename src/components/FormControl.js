@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -18,35 +18,41 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function SimpleSelect() {
+export default function SimpleSelect(props) {
   const classes = useStyles();
-  const [age, setAge] = React.useState("");
+  const inputLabel = useRef(null);
+  const [labelWidth, setLabelWidth] = useState(0);
 
-  const inputLabel = React.useRef(null);
-  const [labelWidth, setLabelWidth] = React.useState(0);
-  React.useEffect(() => {
-    setLabelWidth(inputLabel.current.offsetWidth);
+  const [sortBy, setSortBy] = useState(props.sortBy);
+  const { handleSortByChange } = props;
+
+  useEffect(() => {
+    setLabelWidth(inputLabel.offsetWidth);
   }, []);
 
+  useEffect(() => {
+    handleSortByChange(sortBy);
+  }, [sortBy, handleSortByChange]);
+
   const handleChange = event => {
-    setAge(event.target.value);
+    setSortBy(event.target.value);
   };
 
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel id="demo-simple-select-helper-label">Age</InputLabel>
+      <InputLabel id="demo-simple-select-helper-label">Sort By</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
         id="demo-simple-select-helper"
-        value={age}
+        value={sortBy}
         onChange={handleChange}
       >
-        <MenuItem value="">
-          <em>None</em>
-        </MenuItem>
-        <MenuItem value={"valence"}>Happines</MenuItem>
+        <MenuItem value={"valence"}>Happiness</MenuItem>
         <MenuItem value={"danceability"}>Danceability</MenuItem>
         <MenuItem value={"energy"}>Energy</MenuItem>
+        <MenuItem value={"speechiness"}>Speechiness</MenuItem>
+        <MenuItem value={"instrumentalness"}>Instrumentalness</MenuItem>
+        <MenuItem value={"liveness"}>Liveness</MenuItem>
       </Select>
       <FormHelperText>Choose how to sort your songs</FormHelperText>
     </FormControl>
