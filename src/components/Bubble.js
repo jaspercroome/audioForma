@@ -27,9 +27,8 @@ class Bubble extends Component {
     const height = tempHeight - (margin.top + margin.bottom);
     const xScale = scaleLinear([0, 1], [0, width]);
     const yScale = scaleLinear([0, 1], [height, 0]);
-    const sortBy = "valence";
 
-    // const sortBy = this.props.sortBy;
+    let sortBy = "valence";
 
     this.state = {
       d3Status: "Not Started",
@@ -104,6 +103,8 @@ class Bubble extends Component {
     const axisY = height * 0.9;
     const d3Data = Array.from(this.state.tracks);
 
+    var toolTipOpacity = 0;
+
     //Color Scale
     var lookup = {};
     var artistArray = [];
@@ -128,6 +129,10 @@ class Bubble extends Component {
       .range(artistIndexArray);
     //
 
+    const mouseHandler = e => {
+      toolTipOpacity = 0.8;
+    };
+
     return (
       <div>
         <svg width={width} height={height}>
@@ -140,16 +145,26 @@ class Bubble extends Component {
               const fill = color(artistScale(track["artists"][0]["name"]));
               return (
                 <Circle
-                  key={`point-${track["id"]}-${track["name"]}`}
+                  key={`${track["name"]}-${track["id"]}`}
                   className="dot"
                   cx={cx}
                   cy={cy}
                   r={r}
                   fill={fill}
                   opacity=".8"
+                  onHover={event => {
+                    mouseHandler(event);
+                  }}
                 />
               );
             })}
+            <Circle
+              cx={width / 2}
+              cy={height / 2}
+              fill="blue"
+              radius="50"
+              opacity={toolTipOpacity}
+            />
             <LinePath
               data={[width * 0.1, width * 0.9]}
               x={d => {
