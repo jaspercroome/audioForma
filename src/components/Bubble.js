@@ -5,7 +5,7 @@ import { interpolateRainbow } from "d3-scale-chromatic";
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
 import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
 
-import { AxisBottom } from "@vx/axis";
+import { Text } from "@vx/text";
 import { Group } from "@vx/group";
 import { Circle, LinePath } from "@vx/shape";
 
@@ -101,6 +101,7 @@ class Bubble extends Component {
   render() {
     const width = this.state.width;
     const height = this.state.height;
+    const axisY = height * 0.9;
     const d3Data = Array.from(this.state.tracks);
 
     //Color Scale
@@ -149,6 +150,31 @@ class Bubble extends Component {
                 />
               );
             })}
+            <LinePath
+              data={[width * 0.1, width * 0.9]}
+              x={d => {
+                return d;
+              }}
+              y={axisY}
+              stroke={"black"}
+              strokeWidth={1}
+            />
+            <Text
+              y={axisY * 0.99}
+              x={width * 0.1}
+              textAnchor={"middle"}
+              style={{ fontSize: "2vw" }}
+            >
+              {"less"}
+            </Text>
+            <Text
+              y={axisY * 0.99}
+              x={width * 0.9}
+              textAnchor={"middle"}
+              style={{ fontSize: "2vw" }}
+            >
+              {"more"}
+            </Text>
           </Group>
         </svg>
         <FormControl
