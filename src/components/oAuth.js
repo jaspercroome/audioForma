@@ -1,12 +1,10 @@
 import React from "react";
-import Creds from "../creds";
 
 export const OAuth = props => {
   const scopes = "user-library-read";
   const redirect_uri = "http://localhost:3000/callback/";
-  const spotifyAuthUrl = `https://accounts.spotify.com/authorize/?client_id=${
-    Creds.spotifyKey || process.env.spotifyKey
-  }&response_type=token&redirect_uri=${encodeURI(
+  const spotifyKey = process.env.REACT_APP_spotifyKey || process.env.spotifykey;
+  const spotifyAuthUrl = `https://accounts.spotify.com/authorize/?client_id=${spotifyKey}&response_type=token&redirect_uri=${encodeURI(
     redirect_uri
   )}&scope=${scopes}`;
 

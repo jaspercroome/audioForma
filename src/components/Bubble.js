@@ -18,10 +18,10 @@ class Bubble extends Component {
     const tempWidth = window.innerWidth;
     const tempHeight = window.innerHeight;
     const margin = {
-      top: tempHeight * 0.1,
-      bottom: tempHeight * 0.1,
-      left: tempWidth * 0.05,
-      right: tempWidth * 0.05
+      top: tempHeight * 0.2,
+      bottom: tempHeight * 0.2,
+      left: tempWidth * 0.0,
+      right: tempWidth * 0.0
     };
     const width = tempWidth - (margin.left + margin.right);
     const height = tempHeight - (margin.top + margin.bottom);

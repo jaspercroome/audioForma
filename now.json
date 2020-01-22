@@ -1,6 +1,8 @@
-{"build":{
-    "env":{
-        "spotifyKey":"@spotifykey",
-        "spotifySecretKey":"@spotifysecretkey"
+{
+  "build": {
+    "env": {
+      "spotifykey": "@spotifykey",
+      "spotifysecretkey": "@spotifysecretkey"
     }
-}}
+  }
+}
