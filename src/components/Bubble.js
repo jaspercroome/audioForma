@@ -10,6 +10,7 @@ import { Group } from "@vx/group";
 import { Circle, LinePath } from "@vx/shape";
 
 import FormControl from "./FormControl";
+import { Tooltip } from "./Tooltip";
 
 class Bubble extends Component {
   constructor(props) {
@@ -28,7 +29,14 @@ class Bubble extends Component {
     const xScale = scaleLinear([0, 1], [0, width]);
     const yScale = scaleLinear([0, 1], [height, 0]);
 
+    const radius = (height, width) => {
+      return height > width ? height * 0.01 : width * 0.01;
+    };
+
     let sortBy = "valence";
+    let toolTipOpacity = 0;
+    let toolTipX = width / 2;
+    let toolTipY = height / 2;
 
     this.state = {
       d3Status: "Not Started",
@@ -38,7 +46,15 @@ class Bubble extends Component {
       margin: margin,
       xScale: xScale,
       yScale: yScale,
+      radius: radius,
       sortBy: sortBy,
+      toolTip: {
+        opacity: toolTipOpacity,
+        x: toolTipX,
+        y: toolTipY,
+        primaryArtist: "",
+        songTitle: ""
+      },
       tracks: {}
     };
   }
@@ -61,10 +77,7 @@ class Bubble extends Component {
       const sortBy = this.state.sortBy;
       const width = this.state.width;
       const height = this.state.height;
-
-      const radius = (height, width) => {
-        return height > width ? height * 0.1 : width * 0.1;
-      };
+      const radius = this.state.radius;
 
       const move = forceSimulation()
         .force(
@@ -82,8 +95,8 @@ class Bubble extends Component {
         .force(
           "collide",
           forceCollide(d => {
-            return (1.2 / 100) * width;
-          }).iterations(10)
+            return radius(height, width) * 1.1;
+          }).iterations(5)
         );
       move.nodes(data).on("tick", tracks => {
         this.setState({ d3Data: tracks });
@@ -97,13 +110,35 @@ class Bubble extends Component {
     this.setState({ d3Status: "pending" });
   };
 
+  enterHandler = (event, cx, cy, primaryArtist, songTitle) => {
+    this.setState({
+      toolTip: {
+        opacity: 0.8,
+        primaryArtist: primaryArtist,
+        x: cx,
+        y: cy,
+        songTitle: songTitle
+      }
+    });
+  };
+  leaveHandler = e => {
+    this.setState({
+      toolTip: {
+        opacity: 0,
+        primaryArtist: "",
+        x: 0,
+        y: 0,
+        songTitle: ""
+      }
+    });
+  };
+
   render() {
     const width = this.state.width;
     const height = this.state.height;
     const axisY = height * 0.9;
-    const d3Data = Array.from(this.state.tracks);
 
-    var toolTipOpacity = 0;
+    const d3Data = Array.from(this.state.tracks);
 
     //Color Scale
     var lookup = {};
@@ -129,42 +164,42 @@ class Bubble extends Component {
       .range(artistIndexArray);
     //
 
-    const mouseHandler = e => {
-      toolTipOpacity = 0.8;
-    };
-
     return (
       <div>
         <svg width={width} height={height}>
           <Group>
-            if (this.state.d3Status !== 'Completed')
             {d3Data.map((track, i) => {
+              const primaryArtist = track["artists"][0]["name"];
+              const songTitle = track["name"];
               const cx = track["x"];
               const cy = track["y"];
               const r = (1 / 100) * width; // equivalent of .5vw
-              const fill = color(artistScale(track["artists"][0]["name"]));
+              const fill = color(artistScale(primaryArtist));
               return (
                 <Circle
                   key={`${track["name"]}-${track["id"]}`}
                   className="dot"
+                  primaryartist={primaryArtist}
                   cx={cx}
                   cy={cy}
                   r={r}
                   fill={fill}
                   opacity=".8"
-                  onHover={event => {
-                    mouseHandler(event);
+                  onMouseEnter={event => {
+                    this.enterHandler(event, cx, cy, primaryArtist, songTitle);
+                  }}
+                  onTouchStart={event => {
+                    this.enterHandler(event, cx, cy, primaryArtist, songTitle);
+                  }}
+                  onMouseLeave={event => {
+                    this.leaveHandler(event);
+                  }}
+                  onTouchEnd={event => {
+                    this.leaveHandler(event);
                   }}
                 />
               );
             })}
-            <Circle
-              cx={width / 2}
-              cy={height / 2}
-              fill="blue"
-              radius="50"
-              opacity={toolTipOpacity}
-            />
             <LinePath
               data={[width * 0.1, width * 0.9]}
               x={d => {
@@ -190,6 +225,13 @@ class Bubble extends Component {
             >
               {"more"}
             </Text>
+            <Tooltip
+              x={this.state.toolTip.x}
+              y={this.state.toolTip.y}
+              opacity={this.state.toolTip.opacity}
+              primaryArtist={this.state.toolTip.primaryArtist}
+              songTitle={this.state.toolTip.songTitle}
+            />
           </Group>
         </svg>
         <FormControl
