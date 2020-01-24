@@ -136,6 +136,7 @@ class Bubble extends Component {
   render() {
     const width = this.state.width;
     const height = this.state.height;
+    const radius = this.state.radius(height, width);
     const axisY = height * 0.9;
 
     const d3Data = Array.from(this.state.tracks);
@@ -173,7 +174,7 @@ class Bubble extends Component {
               const songTitle = track["name"];
               const cx = track["x"];
               const cy = track["y"];
-              const r = (1 / 100) * width; // equivalent of .5vw
+              const r = radius;
               const fill = color(artistScale(primaryArtist));
               return (
                 <Circle

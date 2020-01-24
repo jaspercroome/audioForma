@@ -6,8 +6,8 @@ export const simulation = async tracks => {
   const height = window.innerHeight * 0.9;
   const items = tracks;
 
-  const xScale = scaleLinear([0, 1],[0, width])
-  const yScale = scaleLinear([0, 1],[height, 0])
+  const xScale = scaleLinear([0, 1], [0, width]);
+  const yScale = scaleLinear([0, 1], [height, 0]);
 
   const move = forceSimulation()
     .force(
@@ -25,7 +25,7 @@ export const simulation = async tracks => {
     .force(
       "collide",
       forceCollide(d => {
-        return 25;
+        return (0.5 / 100) * width;
       }).iterations(5)
     );
   move.nodes(items);
