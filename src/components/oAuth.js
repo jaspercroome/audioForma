@@ -23,7 +23,14 @@ export const OAuth = props => {
       >
         Show me my Spotify Library!
       </button>
-      <button className="noThanks">No Thanks</button>
+      <button
+        className="noThanks"
+        onClick={() => {
+          window.location.hash = "public";
+        }}
+      >
+        No Thanks
+      </button>
     </nav>
   );
 };

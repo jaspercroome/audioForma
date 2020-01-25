@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { spotifyTracks } from "../actions";
+import { spotifyTracks, spotifyToken } from "../actions";
 // import rainbowScale from "./rainbowScale";
 import { interpolateRainbow } from "d3-scale-chromatic";
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
@@ -15,7 +15,10 @@ import { Tooltip } from "./Tooltip";
 class Bubble extends Component {
   constructor(props) {
     super(props);
-    const token = window.location.hash.split("=", 2)[1].split("&", 1)[0];
+    const token =
+      window.location.hash === "#public"
+        ? spotifyToken.getToken()
+        : window.location.hash.split("=", 2)[1].split("&", 1)[0] || "none";
     const tempWidth = window.innerWidth;
     const tempHeight = window.innerHeight;
     const margin = {

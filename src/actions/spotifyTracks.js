@@ -1,7 +1,8 @@
 import SpotifyWebApi from "spotify-web-api-js";
 
 export const getTracks = async creds => {
-  const token = creds;
+  const token = await creds;
+  console.log(token);
   let newTracks = [];
   let newAudioFeatures = [];
   let newArtists = [];
