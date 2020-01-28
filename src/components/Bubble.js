@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { spotifyTracks, spotifyToken } from "../actions";
+import { spotifyTracks } from "../actions";
 // import rainbowScale from "./rainbowScale";
 import { interpolateRainbow } from "d3-scale-chromatic";
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
@@ -17,8 +17,8 @@ class Bubble extends Component {
     super(props);
     const token =
       window.location.hash === "#public"
-        ? spotifyToken.getToken()
-        : window.location.hash.split("=", 2)[1].split("&", 1)[0] || "none";
+        ? window.spotify.token
+        : window.location.hash.split("=", 2)[1].split("&", 1)[0];
     const tempWidth = window.innerWidth;
     const tempHeight = window.innerHeight;
     const margin = {
@@ -63,7 +63,7 @@ class Bubble extends Component {
   }
 
   componentDidMount() {
-    const getTracks = token => {
+    const getTracks = () => {
       spotifyTracks.getTracks(this.state.token).then(tracks => {
         this.setState({ tracks: tracks });
         this.setState({ d3Status: "pending" });

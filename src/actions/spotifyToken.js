@@ -1,7 +1,6 @@
 import request from "request";
 
-export const getToken = async store => {
-  let token = "";
+export const GetToken = async store => {
   const client_id = process.env.REACT_APP_spotifyKey;
   const client_secret = process.env.REACT_APP_spotifySecretKey;
   const authOptions = {
@@ -17,9 +16,13 @@ export const getToken = async store => {
     json: true
   };
 
-  request.post(authOptions, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      return body["access_token"];
-    }
-  });
+  async function response() {
+    request.post(authOptions, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        return body.response;
+      }
+    });
+  }
+  let accessToken = await response["response"];
+  return accessToken;
 };
