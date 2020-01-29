@@ -1,7 +1,8 @@
 import React from "react";
-import { OAuth } from "./oAuth";
-import Bubble from "./Bubble";
 import CssBaseline from "@material-ui/core/CssBaseline";
+
+import Login from "./Login";
+import Bubble from "./Bubble";
 
 class App extends React.Component {
   render() {
@@ -9,13 +10,7 @@ class App extends React.Component {
       <React.Fragment>
         <CssBaseline />
         <h1>AudioForma</h1>
-        {window.location.hash ? (
-          <React.Fragment>
-            <Bubble />
-          </React.Fragment>
-        ) : (
-          <OAuth />
-        )}
+        {window.location.hash ? <Bubble /> : <Login />}
       </React.Fragment>
     );
   }
