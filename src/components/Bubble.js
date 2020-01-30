@@ -15,10 +15,11 @@ import { Tooltip } from "./Tooltip";
 class Bubble extends Component {
   constructor(props) {
     super(props);
-    const token =
-      window.location.hash === "#public"
-        ? window.spotify.token
-        : window.location.hash.split("=", 2)[1].split("&", 1)[0];
+    const token = window.location.hash.split("=", 2)[1].split("&", 1)[0];
+    const isPublic =
+      window.location.hash.split("=", 2)[1].split("&", 2)[1] === "public"
+        ? true
+        : false;
     const tempWidth = window.innerWidth;
     const tempHeight = window.innerHeight;
     const margin = {
@@ -29,7 +30,7 @@ class Bubble extends Component {
     };
     const width = tempWidth - (margin.left + margin.right);
     const height = tempHeight - (margin.top + margin.bottom);
-    const xScale = scaleLinear([0, 1], [0, width]);
+    const xScale = scaleLinear([0, 1], [width * 0.1, width * 0.9]);
     const yScale = scaleLinear([0, 1], [height, 0]);
 
     const radius = (height, width) => {
@@ -44,6 +45,7 @@ class Bubble extends Component {
     this.state = {
       d3Status: "Not Started",
       token: token,
+      isPublic: isPublic,
       width: width,
       height: height,
       margin: margin,
@@ -64,10 +66,12 @@ class Bubble extends Component {
 
   componentDidMount() {
     const getTracks = () => {
-      spotifyTracks.getTracks(this.state.token).then(tracks => {
-        this.setState({ tracks: tracks });
-        this.setState({ d3Status: "pending" });
-      });
+      spotifyTracks
+        .getTracks(this.state.token, this.state.isPublic)
+        .then(tracks => {
+          this.setState({ tracks: tracks });
+          this.setState({ d3Status: "pending" });
+        });
     };
     getTracks();
   }

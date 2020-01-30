@@ -9,6 +9,20 @@ const firebaseApp = firebase.initializeApp({
 });
 const base = Rebase.createClass(firebaseApp.database());
 
-export { firebaseApp };
+const getBaseTracks = () =>
+  base
+    .fetch("songs", {
+      context: this,
+      asArray: true
+    })
+    .then(data => {
+      return data;
+    });
+
+const pushBaseTracks = tracks => {
+  base.push("songs", { data: tracks });
+};
+
+export { firebaseApp, pushBaseTracks, getBaseTracks };
 
 export default base;
