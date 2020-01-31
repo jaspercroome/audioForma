@@ -40,7 +40,7 @@ export default function GetToken(props) {
         response();
       }}
     >
-      No Thanks
+      Show me All the songs!
     </Button>
   );
 }

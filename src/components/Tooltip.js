@@ -22,7 +22,7 @@ export const Tooltip = props => {
       x={x}
       opacity={opacity}
       textAnchor={"middle"}
-      style={{ fontSize: "1.5vw" }}
+      style={{ fontSize: "4vw" }}
     >
       {primaryArtist + " | " + songTitle}
     </Text>

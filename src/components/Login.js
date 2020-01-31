@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import Button from "@material-ui/core/Button";
 
-import GetSpotifyToken from "../actions/GetSpotifyToken";
+import GetSpotifyToken from "./GetSpotifyToken";
 
 class Login extends React.Component {
   constructor(props) {
@@ -26,6 +26,7 @@ class Login extends React.Component {
       <nav className="login">
         <h2>Authenticate with Spotify</h2>
         <p>If you use Spotify, we can visualize your song library for you.</p>
+        <p>Otherwise, we can show you all the songs we've collected info on.</p>
         <Button
           variant="contained"
           className="spotify"

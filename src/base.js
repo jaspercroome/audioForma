@@ -9,9 +9,9 @@ const firebaseApp = firebase.initializeApp({
 });
 const base = Rebase.createClass(firebaseApp.database());
 
-const getBaseTracks = () =>
-  base
-    .fetch("songs", {
+const getBaseTracks = async () =>
+  await base
+    .fetch("publicTrackIds", {
       context: this,
       asArray: true
     })
@@ -19,10 +19,10 @@ const getBaseTracks = () =>
       return data;
     });
 
-const pushBaseTracks = tracks => {
-  base.push("songs", { data: tracks });
+const pushBaseTrackIds = tracks => {
+  base.post("publicTrackIds", { data: tracks });
 };
 
-export { firebaseApp, pushBaseTracks, getBaseTracks };
+export { firebaseApp, pushBaseTrackIds, getBaseTracks };
 
 export default base;

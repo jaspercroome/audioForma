@@ -33,8 +33,10 @@ class Bubble extends Component {
     const xScale = scaleLinear([0, 1], [width * 0.1, width * 0.9]);
     const yScale = scaleLinear([0, 1], [height, 0]);
 
-    const radius = (height, width) => {
-      return height > width ? height * 0.01 : width * 0.01;
+    const radius = (height, width, count) => {
+      return height > width
+        ? height * (1 / count) * 2
+        : width * (1 / count) * 2;
     };
 
     let sortBy = "valence";
@@ -102,7 +104,7 @@ class Bubble extends Component {
         .force(
           "collide",
           forceCollide(d => {
-            return radius(height, width) * 1.1;
+            return radius(height, width, data.length) * 1.1;
           }).iterations(5)
         );
       move.nodes(data).on("tick", tracks => {
@@ -132,21 +134,19 @@ class Bubble extends Component {
     this.setState({
       toolTip: {
         opacity: 0,
-        primaryArtist: "",
         x: 0,
-        y: 0,
-        songTitle: ""
+        y: 0
       }
     });
   };
 
   render() {
+    const d3Data = Array.from(this.state.tracks);
+
     const width = this.state.width;
     const height = this.state.height;
-    const radius = this.state.radius(height, width);
+    const radius = this.state.radius(height, width, d3Data.length);
     const axisY = height * 0.9;
-
-    const d3Data = Array.from(this.state.tracks);
 
     //Color Scale
     var lookup = {};

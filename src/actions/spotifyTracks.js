@@ -1,6 +1,6 @@
 import SpotifyWebApi from "spotify-web-api-js";
-import { getBaseTracks, pushBaseTracks } from "../base";
-import chunk from "../helpers";
+import { getBaseTracks, pushBaseTrackIds } from "../base";
+import { chunk } from "../helpers";
 
 export const getTracks = async (creds, publicFlag) => {
   const token = await creds;
@@ -9,8 +9,11 @@ export const getTracks = async (creds, publicFlag) => {
   let newTracks = [];
   let newAudioFeatures = [];
   let newArtists = [];
+  let trackIds = [];
 
   const publicTrackIds = await getBaseTracks();
+
+  console.log(publicTrackIds);
 
   let spotify = new SpotifyWebApi();
   spotify.setAccessToken(token);
@@ -62,9 +65,23 @@ export const getTracks = async (creds, publicFlag) => {
       for (let artist of artistData["artists"]) {
         newArtists.push(artist);
       }
+      for (let t of tempTrackIds) {
+        trackIds.push(t);
+      }
 
       offset += 50;
+      chunkOffset += 1;
     }
+
+    for (let p of publicTrackIds) {
+      trackIds.push(p);
+    }
+    const finalTrackIds = Array.from(new Set(trackIds));
+    console.log(finalTrackIds);
+
+    !isPublic
+      ? pushBaseTrackIds(finalTrackIds)
+      : console.log("nothing new to add");
 
     const trackMerge = (arr1, arr2) => {
       const temp = [];
@@ -104,8 +121,6 @@ export const getTracks = async (creds, publicFlag) => {
     const allData = artistMerge(trackData, finalArtists);
 
     console.log(allData);
-
-    pushBaseTracks(trackData);
 
     return trackData;
   } catch (error) {
