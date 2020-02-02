@@ -59,8 +59,9 @@ class Bubble extends Component {
         opacity: toolTipOpacity,
         x: toolTipX,
         y: toolTipY,
-        primaryArtist: "",
-        songTitle: ""
+        primaryArtist: "z",
+        songTitle: "",
+        id: ""
       },
       tracks: {}
     };
@@ -119,14 +120,15 @@ class Bubble extends Component {
     this.setState({ d3Status: "pending" });
   };
 
-  enterHandler = (event, cx, cy, primaryArtist, songTitle) => {
+  enterHandler = (event, cx, cy, primaryArtist, songTitle, id) => {
     this.setState({
       toolTip: {
         opacity: 0.8,
         primaryArtist: primaryArtist,
         x: cx,
         y: cy,
-        songTitle: songTitle
+        songTitle: songTitle,
+        id: id
       }
     });
   };
@@ -152,7 +154,7 @@ class Bubble extends Component {
     var lookup = {};
     var artistArray = [];
 
-    for (var item, i = 0; (item = d3Data[i++]); ) {
+    for (var item, i = 0; (item = d3Data[i++]);) {
       var name = item["artists"][0]["name"];
 
       if (!(name in lookup)) {
@@ -179,6 +181,7 @@ class Bubble extends Component {
             {d3Data.map((track, i) => {
               const primaryArtist = track["artists"][0]["name"];
               const songTitle = track["name"];
+              const id = track["id"]
               const cx = track["x"];
               const cy = track["y"];
               const r = radius;
@@ -194,10 +197,10 @@ class Bubble extends Component {
                   fill={fill}
                   opacity=".8"
                   onMouseEnter={event => {
-                    this.enterHandler(event, cx, cy, primaryArtist, songTitle);
+                    this.enterHandler(event, cx, cy, primaryArtist, songTitle, id);
                   }}
                   onTouchStart={event => {
-                    this.enterHandler(event, cx, cy, primaryArtist, songTitle);
+                    this.enterHandler(event, cx, cy, primaryArtist, songTitle, id);
                   }}
                   onMouseLeave={event => {
                     this.leaveHandler(event);
@@ -239,6 +242,7 @@ class Bubble extends Component {
               opacity={this.state.toolTip.opacity}
               primaryArtist={this.state.toolTip.primaryArtist}
               songTitle={this.state.toolTip.songTitle}
+              id={this.state.toolTip.id}
             />
           </Group>
         </svg>
