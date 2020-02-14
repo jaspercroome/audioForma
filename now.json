@@ -2,7 +2,7 @@
   "build": {
     "env": {
       "REACT_APP_spotifyKey": "@spotifykey",
-      "spotifysecretkey": "@spotifysecretkey"
+      "REACT_APP_spotifySecretKey": "@spotifysecretkey"
     }
   }
 }
