@@ -1,6 +1,25 @@
 import SpotifyWebApi from "spotify-web-api-js";
-import { getBaseTracks, pushBaseTrackIds } from "../base";
-import { chunk } from "../helpers";
+import _ from "lodash";
+import { getBaseTrackData, getBaseTrackIds, pushBaseTrackIds } from "../base";
+import { chunk, unique } from "../helpers";
+
+export const getPublicTracks = async () => {
+  const tracks = [];
+  let rawData = await getBaseTrackData();
+  for (let item of rawData) {
+    // if item in array is array
+    if (item.length) {
+      for (let track of item) {
+        // push items from array into tracks
+        tracks.push(track);
+      }
+    }
+  }
+  const finalPublicTracks = unique(tracks, "id");
+
+  console.log(finalPublicTracks);
+  return finalPublicTracks;
+};
 
 export const getTracks = async (creds, publicFlag) => {
   const token = await creds;
@@ -11,7 +30,7 @@ export const getTracks = async (creds, publicFlag) => {
   let newArtists = [];
   let trackIds = [];
 
-  const publicTrackIds = await getBaseTracks();
+  const publicTrackIds = await getBaseTrackIds();
 
   console.log(publicTrackIds);
 
@@ -77,7 +96,6 @@ export const getTracks = async (creds, publicFlag) => {
       trackIds.push(p);
     }
     const finalTrackIds = Array.from(new Set(trackIds));
-    console.log(finalTrackIds);
 
     !isPublic
       ? pushBaseTrackIds(finalTrackIds)
@@ -85,9 +103,11 @@ export const getTracks = async (creds, publicFlag) => {
 
     const trackMerge = (arr1, arr2) => {
       const temp = [];
+      const a1 = _.compact(arr1);
+      const a2 = _.compact(arr2);
 
-      arr1.forEach(x => {
-        arr2.forEach(y => {
+      a1.forEach(x => {
+        a2.forEach(y => {
           if (x["id"] === y["id"]) {
             temp.push({ ...x, ...y });
           }

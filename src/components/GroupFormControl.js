@@ -23,38 +23,38 @@ export default function SimpleSelect(props) {
   const inputLabel = useRef(null);
   const [labelWidth, setLabelWidth] = useState(0);
 
-  const [sortBy, setSortBy] = useState(props.sortBy);
-  const { handleSortByChange } = props;
+  const [groupBy, setGroupBy] = useState(props.groupBy);
+  const { handleGroupByChange } = props;
 
   useEffect(() => {
     setLabelWidth(inputLabel.offsetWidth);
   }, []);
 
   useEffect(() => {
-    handleSortByChange(sortBy);
-  }, [sortBy, handleSortByChange]);
+    handleGroupByChange(groupBy);
+  }, [groupBy, handleGroupByChange]);
 
   const handleChange = event => {
-    setSortBy(event.target.value);
+    setGroupBy(event.target.value);
   };
 
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel id="demo-simple-select-helper-label">Sort By</InputLabel>
+      <InputLabel id="demo-simple-select-helper-label">Group By</InputLabel>
       <Select
         labelId="demo-simple-select-helper-label"
         id="demo-simple-select-helper"
-        value={sortBy}
+        value={groupBy}
         onChange={handleChange}
       >
-        <MenuItem value={"valence"}>Happiness</MenuItem>
-        <MenuItem value={"danceability"}>Danceability</MenuItem>
-        <MenuItem value={"energy"}>Energy</MenuItem>
-        <MenuItem value={"speechiness"}>Speechiness</MenuItem>
-        <MenuItem value={"instrumentalness"}>Instrumentalness</MenuItem>
-        <MenuItem value={"liveness"}>Liveness</MenuItem>
+        <MenuItem value={"track"}>Track</MenuItem>
+        <MenuItem value={"artist"}>Artist</MenuItem>
+        <MenuItem value={"album"}>Album</MenuItem>
+        <MenuItem value={"genre"}>Genre</MenuItem>
       </Select>
-      <FormHelperText>Choose how to sort your songs</FormHelperText>
+      <FormHelperText>
+        Choose how to <b>group</b> your songs
+      </FormHelperText>
     </FormControl>
   );
 }
