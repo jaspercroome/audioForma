@@ -105,46 +105,6 @@ export default withTooltip(
 
         xScale.domain(sortByDomain);
 
-        // switch (groupBy) {
-        //   case "artist": {
-        //     let data = nest()
-        //       .key(d => {
-        //         return d["artists"][0]["name"];
-        //       })
-        //       .sortKeys(ascending)
-        //       .rollup(leaves => {
-        //         return {
-        //           score: mean(leaves, d => {
-        //             return d[sortBy];
-        //           }),
-        //           size: leaves.length
-        //         };
-        //       })
-        //       .entries(tempData);
-        //     console.log(data);
-        //     break;
-        //   }
-        //   default: {
-        //     let data = nest()
-        //       .key(d => {
-        //         return d["id"];
-        //       })
-        //       .sortKeys(ascending)
-        //       .rollup(leaves => {
-        //         return {
-        //           score: mean(leaves, d => {
-        //             return d[sortBy];
-        //           }),
-        //           size: leaves.length
-        //         };
-        //       })
-        //       .entries(tempData);
-
-        //     this.setState({ d3Data: data });
-        //     console.log(data);
-        //   }
-        // }
-
         const move = forceSimulation()
           .force(
             "x",
@@ -193,6 +153,51 @@ export default withTooltip(
     handleGroupByChange = groupBy => {
       this.setState({ groupBy: groupBy });
       this.setState({ d3Status: "pending" });
+
+      const sortBy = this.state.sortBy;
+      const tempData = this.state.tracks;
+
+      switch (groupBy) {
+        case "artist": {
+          let data = nest()
+            .key(d => {
+              return d["artists"][0]["name"];
+            })
+            .sortKeys(ascending)
+            .rollup(leaves => {
+              return {
+                score: mean(leaves, d => {
+                  return d[sortBy];
+                }),
+                size: leaves.length
+              };
+            })
+            .entries(tempData);
+
+          this.setState({ tracks: data });
+          console.log(data);
+          break;
+        }
+        default: {
+          let data = nest()
+            .key(d => {
+              return d["id"];
+            })
+            .sortKeys(ascending)
+            .rollup(leaves => {
+              return {
+                score: mean(leaves, d => {
+                  return d[sortBy];
+                }),
+                size: leaves.length
+              };
+            })
+            .entries(tempData);
+
+          this.setState({ tracks: data });
+          console.log(data);
+        }
+      }
     };
 
     render() {
@@ -200,7 +205,6 @@ export default withTooltip(
 
       const width = this.state.width;
       const height = this.state.height;
-      const size = 5;
       const radius = this.state.radius(height, width, d3Data.length);
       const axisY = height * 0.9;
 
@@ -209,20 +213,21 @@ export default withTooltip(
       //Color Scale
       var lookup = {};
       var artistArray = [];
-
+      
       for (var item, i = 0; (item = d3Data[i++]); ) {
-        var name = item["artists"][0]["name"];
-
+        var name =
+        this.state.groupBy === "track" ? item["artists"][0]["name"] : item;
+        
         if (!(name in lookup)) {
           lookup[name] = 1;
           artistArray.push(name);
         }
       }
       var artistIndexArray = [];
-      // map the artist index to a matching array, for the range in the color scale.
-      for (i = 0; i < artistArray.length; i++) {
-        artistIndexArray.push(i / artistArray.length);
-      }
+        // map the artist index to a matching array, for the range in the color scale.
+        for (i = 0; i < artistArray.length; i++) {
+          artistIndexArray.push(i / artistArray.length);
+        }
       const color = scaleSequential(interpolateRainbow);
 
       const artistScale = scaleOrdinal()
@@ -340,10 +345,10 @@ export default withTooltip(
             sortBy={this.state.sortBy}
             handleSortByChange={this.handleSortByChange}
           />
-          {/* <GroupFormControl
+          <GroupFormControl
             groupBy={this.state.groupBy}
             handleGroupByChange={this.handleGroupByChange}
-          /> */}
+          />
         </div>
       );
     }
