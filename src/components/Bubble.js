@@ -213,21 +213,21 @@ export default withTooltip(
       //Color Scale
       var lookup = {};
       var artistArray = [];
-      
-      for (var item, i = 0; (item = d3Data[i++]); ) {
+
+      for (var item, i = 0; (item = d3Data[i++]);) {
         var name =
-        this.state.groupBy === "track" ? item["artists"][0]["name"] : item;
-        
+          this.state.groupBy === "track" ? item["artists"][0]["name"] : item;
+
         if (!(name in lookup)) {
           lookup[name] = 1;
           artistArray.push(name);
         }
       }
       var artistIndexArray = [];
-        // map the artist index to a matching array, for the range in the color scale.
-        for (i = 0; i < artistArray.length; i++) {
-          artistIndexArray.push(i / artistArray.length);
-        }
+      // map the artist index to a matching array, for the range in the color scale.
+      for (i = 0; i < artistArray.length; i++) {
+        artistIndexArray.push(i / artistArray.length);
+      }
       const color = scaleSequential(interpolateRainbow);
 
       const artistScale = scaleOrdinal()
@@ -345,10 +345,10 @@ export default withTooltip(
             sortBy={this.state.sortBy}
             handleSortByChange={this.handleSortByChange}
           />
-          <GroupFormControl
+          {/* <GroupFormControl
             groupBy={this.state.groupBy}
             handleGroupByChange={this.handleGroupByChange}
-          />
+          /> */}
         </div>
       );
     }
