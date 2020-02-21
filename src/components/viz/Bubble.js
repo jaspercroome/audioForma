@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { spotifyTracks } from "../actions";
+import { spotifyTracks } from "../../actions";
 // import rainbowScale from "./rainbowScale";
 import { nest } from "d3-collection";
 import { ascending, mean } from "d3-array";
@@ -13,21 +13,16 @@ import { Group } from "@vx/group";
 import { Circle, LinePath } from "@vx/shape";
 import { withTooltip, Tooltip } from "@vx/tooltip";
 
-import SortFormControl from "./SortFormControl";
-import GroupFormControl from "./GroupFormControl";
+import SortFormControl from "../controls/SortFormControl";
+import GroupFormControl from "../controls/GroupFormControl";
 
 export default withTooltip(
   class Bubble extends Component {
     constructor(props) {
       super(props);
-      const token = window.location.hash.split("=", 2)[1].split("&", 1)[0];
-      const isPublic =
-        window.location.hash.split("=", 2)[1].split("&", 2)[1] === "public"
-          ? true
-          : false;
       let sortBy = "valence";
       let sortByDomain = [0, 1];
-      let groupBy = isPublic ? "artist" : "track";
+      let groupBy = "";
 
       const tempWidth = window.innerWidth;
       const tempHeight = window.innerHeight;
@@ -56,8 +51,8 @@ export default withTooltip(
 
       this.state = {
         d3Status: "Not Started",
-        token: token,
-        isPublic: isPublic,
+        token: "",
+        isPublic: "isPublic",
         width: width,
         height: height,
         margin: margin,
@@ -122,7 +117,7 @@ export default withTooltip(
             "collide",
             forceCollide(d => {
               return radius(height, width, tempData.length) * 1.4;
-            }).iterations(1)
+            }).iterations(10)
           );
         move.nodes(tempData).on("tick", tracks => {
           this.setState({ d3Data: tracks });

@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "@material-ui/core/Button";
 
-import GetSpotifyToken from "./GetSpotifyToken";
+import GetSpotifyToken from "../actions/GetSpotifyToken";
 
 class Login extends React.Component {
   constructor(props) {

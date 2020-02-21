@@ -2,7 +2,8 @@ import React from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 import Login from "./Login";
-import Bubble from "./Bubble";
+import DataSpace from "./DataSpace";
+import DataContext from "./DataContext";
 
 class App extends React.Component {
   render() {
@@ -10,7 +11,7 @@ class App extends React.Component {
       <React.Fragment>
         <CssBaseline />
         <h1>AudioForma</h1>
-        {window.location.hash ? <Bubble /> : <Login />}
+        {window.location.hash ? <DataContext /> : <Login />}
       </React.Fragment>
     );
   }

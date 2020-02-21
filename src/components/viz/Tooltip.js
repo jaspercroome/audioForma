@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Text } from "@vx/text";
-import { Detail } from "./detail"
+import { Detail } from "./detail";
 
 export const Tooltip = props => {
   const [x, setX] = useState(props.x);
@@ -29,9 +29,7 @@ export const Tooltip = props => {
         style={{ fontSize: "4vw" }}
       >
         {primaryArtist + " | " + songTitle}
-        <Detail
-          id={id}
-        />
+        <Detail id={id} />
       </Text>
     </React.Fragment>
   );
