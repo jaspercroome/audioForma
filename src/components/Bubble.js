@@ -349,10 +349,10 @@ export default withTooltip(
             sortBy={this.state.sortBy}
             handleSortByChange={this.handleSortByChange}
           />
-          <GroupFormControl
+          {/* <GroupFormControl
             groupBy={this.state.groupBy}
             handleGroupByChange={this.handleGroupByChange}
-          />
+          /> */}
         </div>
       );
     }
