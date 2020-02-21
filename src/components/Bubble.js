@@ -213,21 +213,21 @@ export default withTooltip(
       //Color Scale
       var lookup = {};
       var artistArray = [];
-      
+
       for (var item, i = 0; (item = d3Data[i++]); ) {
         var name =
-        this.state.groupBy === "track" ? item["artists"][0]["name"] : item;
-        
+          this.state.groupBy === "track" ? item["artists"][0]["name"] : item;
+
         if (!(name in lookup)) {
           lookup[name] = 1;
           artistArray.push(name);
         }
       }
       var artistIndexArray = [];
-        // map the artist index to a matching array, for the range in the color scale.
-        for (i = 0; i < artistArray.length; i++) {
-          artistIndexArray.push(i / artistArray.length);
-        }
+      // map the artist index to a matching array, for the range in the color scale.
+      for (i = 0; i < artistArray.length; i++) {
+        artistIndexArray.push(i / artistArray.length);
+      }
       const color = scaleSequential(interpolateRainbow);
 
       const artistScale = scaleOrdinal()
@@ -247,14 +247,18 @@ export default withTooltip(
           </a>
           <svg width={width} height={height}>
             <Group>
-              {d3Data.map((track, i) => {
+              {d3Data.map((item, i) => {
                 const sortBy = this.state.sortBy;
-                const sortByValue = track[sortBy];
-                const primaryArtist = track["artists"][0]["name"];
-                const songTitle = track["name"];
-                const id = track["id"];
-                const cx = track["x"];
-                const cy = track["y"];
+                const sortByValue = item[sortBy];
+                const primaryArtist =
+                  this.state.groupBy === "track"
+                    ? item["artists"][0]["name"]
+                    : item["key"];
+                const songTitle =
+                  this.state.groupBy === "track" ? item["name"] : item["key"];
+                const id = item["id"];
+                const cx = item["x"];
+                const cy = item["y"];
                 const r = radius;
                 const fill = color(artistScale(primaryArtist));
                 return (
