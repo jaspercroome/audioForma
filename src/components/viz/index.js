@@ -1,4 +1,4 @@
-import * as Bubble from "./Bubble";
+import Bubble from "./Bubble";
 import * as ToolTip from "./Tooltip";
 import * as Text from "./Text";
 import * as rainbowScale from "./rainbowScale";

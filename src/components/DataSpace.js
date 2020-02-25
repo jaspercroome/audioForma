@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import { TrackContext } from "./context/DataContext";
 
 import { spotifyTracks } from "../actions";
 
-import { GroupFormControl } from "./controls";
+import { Bubble } from "./viz";
+
+import { GroupFormControl, SortFormControl } from "./controls";
 
 const DataSpace = props => {
   const token = window.location.hash.split("=", 2)[1].split("&", 1)[0];
@@ -36,15 +40,9 @@ const DataSpace = props => {
   };
 
   return (
-    <div>
-      <p>{d3Status}</p>
-      <p>{isPublic ? "public" : "private"}</p>
-      <p> {groupBy} </p>
-      {/* <GroupFormControl
-        groupBy={groupBy}
-        handleGroupByChange={handleGroupByChange}
-      /> */}
-    </div>
+    <TrackContext.Provider value={tracks}>
+      <Bubble />
+    </TrackContext.Provider>
   );
 };
 export default DataSpace;
