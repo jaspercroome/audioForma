@@ -30,5 +30,28 @@ export const simulation = async tracks => {
     );
   move.nodes(items);
 
+  // const move = forceSimulation()
+  //   .force(
+  //     "x",
+  //     forceX(d => {
+  //       return xScale(d[sortBy]);
+  //     }).strength(0.1)
+  //   )
+  //   .force(
+  //     "y",
+  //     forceY(d => {
+  //       return yScale(0.5);
+  //     }).strength(0.1)
+  //   )
+  //   .force(
+  //     "collide",
+  //     forceCollide(d => {
+  //       return radius(height, width, tempData.length) * 1.4;
+  //     }).iterations(1)
+  //   );
+  // move.nodes(tempData).on("tick", tracks => {
+  //   this.setState({ d3Data: tracks });
+  // });
+
   return items;
 };
