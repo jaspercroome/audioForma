@@ -313,15 +313,11 @@ export default withTooltip(
                           }, 300);
                         }}
                         onTouchStart={event => {
-                          if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                          this.props.showTooltip({
-                            tooltipLeft: cx,
-                            tooltipTop: cy - 30,
-                            tooltipData: {
+                          this.handleModalChange(event, {
+                            modalData: {
                               primaryArtist: primaryArtist,
                               songTitle: songTitle,
-                              sortBy: sortBy,
-                              sortByValue: sortByValue
+                              url: url
                             }
                           });
                         }}
