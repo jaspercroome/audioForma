@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^7.2.1",
     "@vx/vx": "0.0.193-alpha.2",
     "autoprefixer-stylus": "0.14.0",
+    "axios": "^0.19.2",
     "d3-array": "^2.4.0",
     "d3-collection": "^1.0.7",
     "d3-force": "^2.0.1",

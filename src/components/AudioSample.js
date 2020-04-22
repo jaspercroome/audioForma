@@ -40,6 +40,7 @@ const AudioSample = props => {
   const id = modal["id"];
   const token = modal["token"];
   const url = modal["url"] && modal["url"].split("?", 1)[0] + ".mp3";
+  const previewId = modal["url"] && modal["url"].split("/", 5)[4].split("?", 1)[0]
   const classes = useStyles();
   // getModalStyle is not a pure function, we roll the style only on the first render
   const [modalStyle] = React.useState(getModalStyle);
@@ -53,17 +54,6 @@ const AudioSample = props => {
       }
     });
   };
-  // const songData = url => {
-  //   fetch(url).then(t => {
-  //     return t.blob().then(b => {
-  //       var a = createElement("a");
-  //       a.href = URL.createObjectURL(b);
-  //       a.setAttribute("download", true);
-  //       a.click();
-  //     });
-  //   });
-  // };
-  // songData(url);
 
   return (
     <Modal
@@ -77,14 +67,14 @@ const AudioSample = props => {
         {url ? (
           <Fragment>
             <h4>{trackName + " | " + artist}</h4>
-            <Detail id={id} token={token} />
+            <Detail previewId={previewId} />
             <audio controls autoPlay name={trackName + " | " + artist}>
               <source src={url} type="audio/mpeg" />
             </audio>
           </Fragment>
         ) : (
-          <p>Bummer! No audio sample available.</p>
-        )}
+            <p>Bummer! No audio sample available.</p>
+          )}
       </div>
     </Modal>
   );

@@ -4,8 +4,10 @@ import * as spotifyTracks from "./spotifyTracks";
 import { getAa } from "./spotifyAudioAnalysis";
 import { dodge } from "./dodge";
 import { simulation } from "./forceCollide";
+import { afMicroService } from './afMicroService'
 
 export {
+  afMicroService,
   getAa as spotifyAudioAnalysis,
   spotifyAudioFeatures,
   spotifyPlaylists,

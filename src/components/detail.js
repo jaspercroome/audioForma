@@ -7,14 +7,14 @@ import { interpolateRainbow } from "d3-scale-chromatic";
 import { extent } from "d3-array";
 
 import { spotifyAudioAnalysis } from "../actions";
+import { afMicroService } from "../actions";
 
 export const Detail = props => {
-  const [id, setId] = useState(props.id);
-  const [token, setToken] = useState(props.token);
+  const [previewId, setPreviewId] = useState(props.previewId);
   const [trackAnalysis, setTrackAnalysis] = useState([]);
   const [timeRange, setTimeRange] = useState([]);
   const [d3Data, setD3Data] = useState([]);
-  const [rainbowScale, setRainbowScale] = useState(() => {});
+  const [rainbowScale, setRainbowScale] = useState(() => { });
   const [color, setColor] = useState();
 
   const xScale = scaleLinear()
@@ -31,13 +31,12 @@ export const Detail = props => {
   };
 
   useEffect(() => {
-    setId(id);
-    setToken(token);
-    console.log(id, token);
-    spotifyAudioAnalysis(id, token).then(data => {
-      setTrackAnalysis(data["segments"]);
+    setPreviewId(props.previewId)
+    afMicroService(previewId).then(data => {
+      setTrackAnalysis(data);
+      console.log(props.previewId)
     });
-  }, [props.id, props.token]);
+  }, [props.previewId]);
 
   useEffect(() => {
     if (trackAnalysis.length > 0) {
@@ -57,9 +56,9 @@ export const Detail = props => {
           trackAnalysis.map(s => {
             return t === d3Data[i]["timbre"]
               ? d3Data[i]["values"].push({
-                  segmentStart: s["start"],
-                  segmentStrength: s["timbre"][t]
-                })
+                segmentStart: s["start"],
+                segmentStrength: s["timbre"][t]
+              })
               : null;
           })
         );
@@ -96,8 +95,8 @@ export const Detail = props => {
           });
         })
       ) : (
-        <p>{"loading..."}</p>
-      )}
+          <p>{"loading..."}</p>
+        )}
     </svg>
   );
 };
