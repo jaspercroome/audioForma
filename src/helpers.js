@@ -5,12 +5,14 @@ const chunk = (array, size) => {
   return arrays;
 };
 
-const unique = (array, identifier) => {
+const unique = (array, identifier1, identifier2) => {
   let uniq = {};
   const finalArray = array.filter(
     // if object with specific identifier isn't in the 'uniq' object,
     // keep it in the final Array.
-    obj => !uniq[obj[identifier]] && (uniq[obj[identifier]] = true)
+    obj =>
+      !uniq[obj[identifier1][identifier2]] &&
+      (uniq[obj[identifier1][identifier2]] = true)
   );
   return finalArray;
 };

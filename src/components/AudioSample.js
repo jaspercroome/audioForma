@@ -2,6 +2,9 @@ import React, { Fragment } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 
+import { Detail } from "./detail";
+import { createElement } from "react";
+
 function rand() {
   return Math.round(Math.random() * 20) - 10;
 }
@@ -34,12 +37,14 @@ const AudioSample = props => {
 
   const artist = modal["artist"];
   const trackName = modal["title"];
+  const id = modal["id"];
+  const token = modal["token"];
   const url = modal["url"] && modal["url"].split("?", 1)[0] + ".mp3";
   const classes = useStyles();
   // getModalStyle is not a pure function, we roll the style only on the first render
   const [modalStyle] = React.useState(getModalStyle);
 
-  const handleChange = event => {
+  const handleChange = async event => {
     handleModalChange(event, {
       modalData: {
         primaryArtist: null,
@@ -48,6 +53,17 @@ const AudioSample = props => {
       }
     });
   };
+  // const songData = url => {
+  //   fetch(url).then(t => {
+  //     return t.blob().then(b => {
+  //       var a = createElement("a");
+  //       a.href = URL.createObjectURL(b);
+  //       a.setAttribute("download", true);
+  //       a.click();
+  //     });
+  //   });
+  // };
+  // songData(url);
 
   return (
     <Modal
@@ -61,6 +77,7 @@ const AudioSample = props => {
         {url ? (
           <Fragment>
             <h4>{trackName + " | " + artist}</h4>
+            <Detail id={id} token={token} />
             <audio controls autoPlay name={trackName + " | " + artist}>
               <source src={url} type="audio/mpeg" />
             </audio>

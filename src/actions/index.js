@@ -1,13 +1,15 @@
 import * as spotifyAudioFeatures from "./spotifyAudioFeatures";
 import * as spotifyPlaylists from "./spotifyPlaylists";
 import * as spotifyTracks from "./spotifyTracks";
-import * as dodge from "./dodge";
-import * as forceCollide from "./forceCollide";
+import { getAa } from "./spotifyAudioAnalysis";
+import { dodge } from "./dodge";
+import { simulation } from "./forceCollide";
 
 export {
+  getAa as spotifyAudioAnalysis,
   spotifyAudioFeatures,
   spotifyPlaylists,
   spotifyTracks,
   dodge,
-  forceCollide
+  simulation as forceCollide
 };

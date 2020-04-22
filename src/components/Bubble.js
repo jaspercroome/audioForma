@@ -1,21 +1,17 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 // import rainbowScale from "./rainbowScale";
-import { nest } from "d3-collection";
-import { ascending, mean } from "d3-array";
 import { interpolateRainbow } from "d3-scale-chromatic";
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
 import _ from "lodash";
 
 import { Text } from "@vx/text";
-import { Group } from "@vx/group";
-import { Circle, LinePath } from "@vx/shape";
+import { LinePath } from "@vx/shape";
 import { withTooltip, Tooltip } from "@vx/tooltip";
 
 import { motion } from "framer-motion";
 
-import { spotifyTracks, dodge } from "../actions";
+import { spotifyTracks, dodge, forceCollide } from "../actions";
 import SortFormControl from "./SortFormControl";
-// import GroupFormControl from "./GroupFormControl";
 import AudioSample from "./AudioSample";
 
 export default withTooltip(
@@ -29,7 +25,6 @@ export default withTooltip(
           : false;
       let sortBy = "valence";
       let sortByDomain = [0, 1];
-      // let groupBy = isPublic ? "artist" : "track";
 
       const tempWidth = window.innerWidth;
       const tempHeight = window.innerHeight;
@@ -47,15 +42,15 @@ export default withTooltip(
         .range([width * 0.1, width * 0.9])
         .clamp(true);
 
-      // const yScale = scaleLinear()
-      //   .domain([0, 1])
-      //   .range([height, 0])
-      //   .clamp(true);
+      const yScale = scaleLinear()
+        .domain([0, 1])
+        .range([height, 0])
+        .clamp(true);
 
       const radius = (height, width, count) => {
         return _.clamp(
           height > width ? height * (1 / count) * 2 : width * (1 / count) * 2,
-          2,
+          4,
           100
         );
       };
@@ -69,11 +64,10 @@ export default withTooltip(
         height: height,
         margin: margin,
         xScale: xScale,
-        // yScale: yScale,
+        yScale: yScale,
         radius: radius,
         sortBy: sortBy,
         sortByDomain: sortByDomain,
-        // groupBy: groupBy,
         modal: {
           open: false,
           url: "",
@@ -85,6 +79,13 @@ export default withTooltip(
     }
 
     componentDidMount() {
+      const xScale = this.state.xScale;
+      const yScale = this.state.yScale;
+      const sortBy = this.state.sortBy;
+      const width = this.state.width;
+      const height = this.state.height;
+      const radius = this.state.radius(height, width, 1000);
+
       const getTracks = () => {
         if (this.state.isPublic) {
           spotifyTracks.getPublicTracks().then(tracks => {
@@ -98,6 +99,9 @@ export default withTooltip(
             .then(tracks => {
               this.setState({ tracks: tracks });
               this.setState({ d3Status: "pending" });
+              forceCollide(tracks, sortBy, radius, xScale, yScale).then(
+                this.setState({ d3Data: tracks, d3Status: "completed" })
+              );
             });
         }
       };
@@ -108,9 +112,9 @@ export default withTooltip(
       if (this.state.d3Status === "pending") {
         const tempData = this.state.tracks;
         const xScale = this.state.xScale;
+        const yScale = this.state.yScale;
         const sortBy = this.state.sortBy;
         const sortByDomain = this.state.sortByDomain;
-        // const groupBy = this.state.groupBy;
         const width = this.state.width;
         const height = this.state.height;
         const radius = this.state.radius(height, width, tempData.length);
@@ -118,12 +122,9 @@ export default withTooltip(
         xScale.domain(sortByDomain);
 
         tempData.length > 0
-          ? dodge
-              .dodge(tempData, radius * 2.1, sortBy, xScale, height)
-              .then(tracks => {
-                this.setState({ d3Data: tracks });
-                this.setState({ d3Status: "Completed" });
-              })
+          ? forceCollide(tempData, sortBy, radius, xScale, yScale).then(
+              this.setState({ d3Data: tempData, d3Status: "completed" })
+            )
           : console.log("waiting for data");
       }
     }
@@ -147,64 +148,23 @@ export default withTooltip(
       this.setState({ d3Status: "pending" });
     };
 
-    handleGroupByChange = groupBy => {
-      this.setState({ groupBy: groupBy });
-      this.setState({ d3Status: "pending" });
-
-      const sortBy = this.state.sortBy;
-      const tempData = this.state.tracks;
-
-      switch (groupBy) {
-        case "artist": {
-          let data = nest()
-            .key(d => {
-              return d["artists"][0]["name"];
-            })
-            .sortKeys(ascending)
-            .rollup(leaves => {
-              return {
-                score: mean(leaves, d => {
-                  return d[sortBy];
-                }),
-                size: leaves.length
-              };
-            })
-            .entries(tempData);
-
-          this.setState({ tracks: data });
-          console.log(data);
-          break;
-        }
-        default: {
-          let data = nest()
-            .key(d => {
-              return d["id"];
-            })
-            .sortKeys(ascending)
-            .rollup(leaves => {
-              return {
-                score: mean(leaves, d => {
-                  return d[sortBy];
-                }),
-                size: leaves.length
-              };
-            })
-            .entries(tempData);
-
-          this.setState({ tracks: data });
-          console.log(data);
-        }
-      }
-    };
     handleModalChange = (e, data) => {
       const open = this.state.modal.open ? false : true;
+      const token = this.state.token;
       const primaryArtist = data["modalData"]["primaryArtist"];
       const songTitle = data["modalData"]["songTitle"];
       const url = data["modalData"]["url"];
+      const id = data["modalData"]["id"];
       this.setState({
-        modal: { open: open, artist: primaryArtist, title: songTitle, url: url }
+        modal: {
+          open: open,
+          artist: primaryArtist,
+          title: songTitle,
+          url: url,
+          id: id,
+          token: token
+        }
       });
-      console.log(this.state.modal.open);
     };
 
     render() {
@@ -219,119 +179,110 @@ export default withTooltip(
 
       //Color Scale
       var lookup = {};
-      var artistArray = [];
+      var genreArray = [];
 
       for (var item, i = 0; (item = d3Data[i++]); ) {
-        var name = item["data"]["artists"][0]["name"];
+        var name =
+          item["artistData"]["genres"] && item["artistData"]["genres"][0];
         if (!(name in lookup)) {
           lookup[name] = 1;
-          artistArray.push(name);
+          genreArray.push(name);
         }
       }
-      var artistIndexArray = [];
+      var genreIndexArray = [];
       // map the artist index to a matching array, for the range in the color scale.
-      for (i = 0; i < artistArray.length; i++) {
-        artistIndexArray.push(i / artistArray.length);
+      for (i = 0; i < genreArray.length; i++) {
+        genreIndexArray.push(i / genreArray.length);
       }
       const color = scaleSequential(interpolateRainbow);
 
-      const artistScale = scaleOrdinal()
-        .domain(artistArray)
-        .range(artistIndexArray);
+      const genreScale = scaleOrdinal()
+        .domain(genreArray)
+        .range(genreIndexArray);
       //
-
       return (
         <div>
-          <a
-            href="https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/"
-            rel="external noopener noreferrer"
-            target="_blank"
-          >
-            Click Here for more details on Spotify's definition of{" "}
-            {this.state.sortBy}
-          </a>
           <svg width={width} height={height}>
-            {this.state.d3Status === "pending" ? (
+            {this.state.d3Status !== "completed" ? (
               <Text y={height / 2} x={width / 2} textAnchor={"middle"}>
                 {"Generating Visual..."}
               </Text>
             ) : (
-              <Group>
+              <Fragment>
                 <Text y={height * 0.05} x={width / 2} textAnchor={"middle"}>
                   {"Tap on a Bubble to hear a 30 second sample"}
                 </Text>
                 {d3Data.map((item, i) => {
-                  const spring = {
-                    type: "spring",
-                    damping: 20,
-                    stiffness: 300
-                  };
                   const sortBy = this.state.sortBy;
-                  const sortByValue = item["data"][sortBy];
-                  const primaryArtist = item["data"]["artists"][0]["name"];
-                  const songTitle = item["data"]["name"];
-                  const id = item["data"]["id"];
-                  const url = item["data"]["preview_url"];
+                  const sortByValue = item["afData"][sortBy];
+                  const primaryArtist = item["artistData"]["name"];
+                  const primaryGenre =
+                    item["artistData"]["genres"] &&
+                    item["artistData"]["genres"][0];
+                  const songTitle = item["trackData"]["name"];
+                  const id = item["trackData"]["id"];
+                  const url = item["trackData"]["preview_url"];
                   const cx = item["x"];
                   const cy = axisY - item["y"];
-                  const r = url ? radius * 2 : radius / 2;
+                  const r = url
+                    ? radius * 2 * (item["trackData"]["popularity"] / 100)
+                    : radius / 2;
                   const fill = url
-                    ? color(artistScale(primaryArtist))
+                    ? color(genreScale(primaryGenre))
                     : "lightgrey";
                   return (
-                    <motion.svg
-                      key={id}
-                      layoutTransition={spring}
-                      x={cx - r}
-                      y={cy - r}
-                      animate={{ x: 100 }}
-                    >
-                      <Circle
-                        key={`${songTitle}-${id}`}
-                        className="dot"
-                        cx={r * 2}
-                        cy={r * 2}
-                        r={r}
-                        fill={fill}
-                        opacity=".8"
-                        onMouseEnter={event => {
-                          if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                          this.props.showTooltip({
-                            tooltipLeft: cx,
-                            tooltipTop: cy + 20,
-                            tooltipData: {
-                              primaryArtist: primaryArtist,
-                              songTitle: songTitle,
-                              sortBy: sortBy,
-                              sortByValue: sortByValue
-                            }
-                          });
-                        }}
-                        onMouseLeave={event => {
-                          tooltipTimeout = setTimeout(() => {
-                            this.props.hideTooltip();
-                          }, 300);
-                        }}
-                        onTouchStart={event => {
-                          this.handleModalChange(event, {
-                            modalData: {
-                              primaryArtist: primaryArtist,
-                              songTitle: songTitle,
-                              url: url
-                            }
-                          });
-                        }}
-                        onClick={event => {
-                          this.handleModalChange(event, {
-                            modalData: {
-                              primaryArtist: primaryArtist,
-                              songTitle: songTitle,
-                              url: url
-                            }
-                          });
-                        }}
-                      />
-                    </motion.svg>
+                    <motion.circle
+                      positionTransition
+                      key={`${songTitle}-${id}`}
+                      className="dot"
+                      animate={{ cx: cx, cy: cy }}
+                      initial={false}
+                      r={r}
+                      fill={fill}
+                      stroke={fill}
+                      strokeWidth={"3px"}
+                      strokeOpacity="1"
+                      opacity=".8"
+                      onMouseEnter={event => {
+                        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                        this.props.showTooltip({
+                          tooltipLeft: cx,
+                          tooltipTop: cy + 20,
+                          tooltipData: {
+                            primaryArtist: primaryArtist,
+                            songTitle: songTitle,
+                            primaryGenre: primaryGenre,
+                            sortBy: sortBy,
+                            sortByValue: sortByValue
+                          }
+                        });
+                      }}
+                      onMouseLeave={event => {
+                        tooltipTimeout = setTimeout(() => {
+                          this.props.hideTooltip();
+                        }, 300);
+                      }}
+                      onTouchStart={event => {
+                        this.handleModalChange(event, {
+                          modalData: {
+                            primaryArtist: primaryArtist,
+                            songTitle: songTitle,
+                            url: url,
+                            id: id
+                          }
+                        });
+                      }}
+                      onClick={event => {
+                        this.handleModalChange(event, {
+                          modalData: {
+                            primaryArtist: primaryArtist,
+                            songTitle: songTitle,
+                            url: url,
+                            id: id
+                          }
+                        });
+                      }}
+                    />
                   );
                 })}
                 <LinePath
@@ -359,7 +310,7 @@ export default withTooltip(
                 >
                   {"more"}
                 </Text>
-              </Group>
+              </Fragment>
             )}
           </svg>
           {this.props.tooltipOpen && (
@@ -369,6 +320,7 @@ export default withTooltip(
                 {" | "}
                 {this.props.tooltipData.primaryArtist}
               </div>
+              <div>{this.props.tooltipData.primaryGenre}</div>
               <div>
                 <strong>{this.props.tooltipData.sortBy}</strong>
                 {" | "}
@@ -384,10 +336,14 @@ export default withTooltip(
             sortBy={this.state.sortBy}
             handleSortByChange={this.handleSortByChange}
           />
-          {/* <GroupFormControl
-            groupBy={this.state.groupBy}
-            handleGroupByChange={this.handleGroupByChange}
-          /> */}
+          <a
+            href="https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/"
+            rel="external noopener noreferrer"
+            target="_blank"
+          >
+            Click Here for more details on Spotify's definition of{" "}
+            {this.state.sortBy}
+          </a>
         </div>
       );
     }

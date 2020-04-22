@@ -1,6 +1,11 @@
 import SpotifyWebApi from "spotify-web-api-js";
 import _ from "lodash";
-import { getBaseTrackData, getBaseTrackIds, pushBaseTrackIds } from "../base";
+import {
+  getBaseTrackData,
+  getBaseTrackIds,
+  pushBaseTrackIds,
+  pushBaseTrackData
+} from "../base";
 import { chunk, unique } from "../helpers";
 
 export const getPublicTracks = async () => {
@@ -15,15 +20,15 @@ export const getPublicTracks = async () => {
       }
     }
   }
-  const finalPublicTracks = unique(tracks, "id");
-
+  const allPublicTracks = unique(tracks, ["trackData"], ["id"]);
+  const finalPublicTracks = _.sampleSize(allPublicTracks, 1000);
   console.log(finalPublicTracks);
   return finalPublicTracks;
 };
 
 export const getTracks = async (creds, publicFlag) => {
   const token = await creds;
-  const isPublic = await publicFlag;
+  const isPublic = publicFlag;
 
   let newTracks = [];
   let newAudioFeatures = [];
@@ -32,7 +37,7 @@ export const getTracks = async (creds, publicFlag) => {
 
   const publicTrackIds = await getBaseTrackIds();
 
-  console.log(publicTrackIds);
+  console.log(`${publicTrackIds.length} total songs queried`);
 
   let spotify = new SpotifyWebApi();
   spotify.setAccessToken(token);
@@ -101,6 +106,12 @@ export const getTracks = async (creds, publicFlag) => {
       ? pushBaseTrackIds(finalTrackIds)
       : console.log("nothing new to add");
 
+    let uniq = {};
+
+    const finalArtists = newArtists.filter(
+      obj => !uniq[obj.id] && (uniq[obj.id] = true)
+    );
+
     const trackMerge = (arr1, arr2) => {
       const temp = [];
       const a1 = _.compact(arr1);
@@ -109,7 +120,9 @@ export const getTracks = async (creds, publicFlag) => {
       a1.forEach(x => {
         a2.forEach(y => {
           if (x["id"] === y["id"]) {
-            temp.push({ ...x, ...y });
+            const trackData = { ...x };
+            const afData = { ...y };
+            temp.push({ trackData, afData });
           }
         });
       });
@@ -122,19 +135,15 @@ export const getTracks = async (creds, publicFlag) => {
 
       arr1.forEach(x => {
         arr2.forEach(y => {
-          if (x["artists"][0]["id"] === y["id"]) {
-            temp.push({ ...x, ...y });
+          const artistData = { ...y };
+          if (x["trackData"]["artists"][0]["id"] === y["id"]) {
+            temp.push({ ...x, artistData });
           }
         });
       });
 
       return temp;
     };
-    let uniq = {};
-
-    const finalArtists = newArtists.filter(
-      obj => !uniq[obj.id] && (uniq[obj.id] = true)
-    );
 
     const trackData = trackMerge(newTracks, newAudioFeatures);
 
@@ -142,7 +151,7 @@ export const getTracks = async (creds, publicFlag) => {
 
     console.log(allData);
 
-    return trackData;
+    return allData;
   } catch (error) {
     console.log(error);
   }

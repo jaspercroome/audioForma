@@ -22,7 +22,7 @@ export default function GetToken(props) {
   };
 
   const response = () => {
-    request.post(authOptions, function (error, response, body) {
+    request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         setToken("#token=" + body["access_token"] + "&public");
       }
@@ -40,7 +40,7 @@ export default function GetToken(props) {
         response();
       }}
     >
-      Show me All the songs!
+      Show me 1000 Random Songs!
     </Button>
   );
 }

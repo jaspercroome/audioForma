@@ -4,10 +4,16 @@
       "path": "."
     },
     {
-      "path": "/Users/Jasper/Documents/GitHub/React-For-Beginners-Starter-Files"
+      "path": "/Users/Jasper/Documents/GitHub/songShape"
     },
     {
-      "path": "/Users/Jasper/Documents/GitHub/songShape/songShape_app"
+      "path": "/Users/Jasper/Documents/GitHub/audioFormaLambda"
+    },
+    {
+      "path": "/Users/Jasper/Documents/GitHub/testzappa"
+    },
+    {
+      "path": "/Users/Jasper/.local/share/virtualenvs/audioFormaLambda-EANB8Pui/lib/python3.7/site-packages/librosa"
     }
   ]
 }

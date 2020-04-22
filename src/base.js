@@ -23,7 +23,7 @@ const getBaseTrackIds = async () =>
 
 const getBaseTrackData = async () =>
   await base
-    .fetch("publicTrackData", {
+    .fetch("allTrackData", {
       context: this,
       asArray: true
     })
@@ -38,7 +38,7 @@ const pushBaseTrackIds = trackIds => {
 const pushBaseTrackData = trackData => {
   const dataArray = chunk(trackData, 1000);
   for (let trackData of dataArray) {
-    base.push("publicTrackData", { data: trackData });
+    base.push("allTrackData", { data: trackData });
     console.log("pushing", trackData);
   }
 };

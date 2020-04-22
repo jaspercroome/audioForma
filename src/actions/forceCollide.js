@@ -1,57 +1,31 @@
 import { forceSimulation, forceCollide, forceY, forceX } from "d3-force";
-import { scaleLinear } from "d3-scale";
 
-export const simulation = async tracks => {
-  const width = window.innerWidth * 0.75;
-  const height = window.innerHeight * 0.9;
-  const items = tracks;
-
-  const xScale = scaleLinear([0, 1], [0, width]);
-  const yScale = scaleLinear([0, 1], [height, 0]);
+export const simulation = async (tracks, sortBy, radius, xScale, yScale) => {
+  const tempData = tracks;
 
   const move = forceSimulation()
     .force(
       "x",
       forceX(d => {
-        return xScale(d["valence"]);
-      }).strength(0.5)
+        return sortBy === "popularity"
+          ? xScale(d["trackData"][sortBy])
+          : xScale(d["afData"][sortBy]);
+      }).strength(0.1)
     )
     .force(
       "y",
       forceY(d => {
         return yScale(0.5);
-      }).strength(0.5)
+      }).strength(0.1)
     )
     .force(
       "collide",
       forceCollide(d => {
-        return (0.5 / 100) * width;
-      }).iterations(5)
+        return d["trackData"]["preview_url"] ? radius * 2 : radius * 0.7;
+      }).iterations(1)
     );
-  move.nodes(items);
-
-  // const move = forceSimulation()
-  //   .force(
-  //     "x",
-  //     forceX(d => {
-  //       return xScale(d[sortBy]);
-  //     }).strength(0.1)
-  //   )
-  //   .force(
-  //     "y",
-  //     forceY(d => {
-  //       return yScale(0.5);
-  //     }).strength(0.1)
-  //   )
-  //   .force(
-  //     "collide",
-  //     forceCollide(d => {
-  //       return radius(height, width, tempData.length) * 1.4;
-  //     }).iterations(1)
-  //   );
-  // move.nodes(tempData).on("tick", tracks => {
-  //   this.setState({ d3Data: tracks });
-  // });
-
-  return items;
+  move.nodes(tempData).on("tick", d3Data => {
+    return d3Data;
+  });
+  move.tick(10);
 };
