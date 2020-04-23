@@ -1,102 +1,64 @@
+//App
+//-Bubble
+//--AudioSample
+//*---detail
 import React, { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
 
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
 import { interpolateRainbow } from "d3-scale-chromatic";
-import { extent } from "d3-array";
+// import { extent } from "d3-array";
 
-import { spotifyAudioAnalysis } from "../actions";
-import { afMicroService } from "../actions";
+import { afMicroServicePost } from "../actions";
 
-export const Detail = props => {
+export const Detail = (props) => {
   const [previewId, setPreviewId] = useState(props.previewId);
   const [trackAnalysis, setTrackAnalysis] = useState([]);
-  const [timeRange, setTimeRange] = useState([]);
   const [d3Data, setD3Data] = useState([]);
-  const [rainbowScale, setRainbowScale] = useState(() => { });
-  const [color, setColor] = useState();
+  // const [rainbowScale, setRainbowScale] = useState(() => {});
+  // const [color, setColor] = useState();
 
-  const xScale = scaleLinear()
-    .domain(timeRange)
-    .range([0, 300])
-    .clamp(true);
-  const yScale = scaleLinear()
-    .domain([0, 200])
-    .range([150, 0])
-    .clamp(true);
-
-  const anglePrep = d => {
-    return;
-  };
+  const xScale = scaleLinear().domain([-10, 10]).range([0, 300]).clamp(true);
+  const yScale = scaleLinear().domain([10, -10]).range([150, 0]).clamp(true);
 
   useEffect(() => {
-    setPreviewId(props.previewId)
-    afMicroService(previewId).then(data => {
+    setPreviewId(props.previewId);
+    afMicroServicePost(previewId).then((data) => {
       setTrackAnalysis(data);
-      console.log(props.previewId)
+      console.log(data);
     });
   }, [props.previewId]);
 
   useEffect(() => {
+    const d3Data = [];
     if (trackAnalysis.length > 0) {
       console.log(trackAnalysis);
-      const timeRange = extent(
-        trackAnalysis.map(d => {
-          return d["start"];
-        })
-      );
-      const timbreArray = Array.from(Array(12), (x, i) => i);
-
-      const d3Data = [];
-
-      timbreArray.map((t, i) => {
-        return (
-          d3Data.push({ timbre: t, values: [] }),
-          trackAnalysis.map(s => {
-            return t === d3Data[i]["timbre"]
-              ? d3Data[i]["values"].push({
-                segmentStart: s["start"],
-                segmentStrength: s["timbre"][t]
-              })
-              : null;
-          })
-        );
-      });
-
+      d3Data.push(trackAnalysis);
       setD3Data(d3Data);
-      setTimeRange(timeRange);
     }
   }, [trackAnalysis]);
 
   return (
     <svg>
       {trackAnalysis.length > 0 ? (
-        d3Data.map((obj, i) => {
-          return obj["values"].map((seg, j) => {
+        d3Data.map((obj) => {
+          return obj.map((n) => {
             return (
-              <motion.circle
-                r={".1vw"}
+              <circle
+                r={parseFloat(n["magnitude"]) * 0.1 + "vw"}
                 opacity={".25"}
-                key={
-                  obj["timbre"].toString() +
-                  "_" +
-                  seg["segmentStart"].toString()
-                }
-                cx={xScale(seg["segmentStart"])}
-                cy={yScale(seg["segmentStrength"])}
-                fill={
-                  seg["segmentStrength"] > 0
-                    ? interpolateRainbow((obj["timbre"] + 1) / 12)
-                    : "white"
-                }
+                key={n["octave"] + "_" + n["note_name"] + "_" + n["note_time"]}
+                cx={xScale(parseFloat(n["circle_fifths_X"]))}
+                cy={yScale(parseFloat(n["circle_fifths_Y"]))}
+                fill="black"
               />
             );
           });
         })
       ) : (
-          <p>{"loading..."}</p>
-        )}
+        <p>{"loading..."}</p>
+      )}
     </svg>
   );
 };

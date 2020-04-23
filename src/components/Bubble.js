@@ -10,7 +10,12 @@ import { withTooltip, Tooltip } from "@vx/tooltip";
 
 import { motion } from "framer-motion";
 
-import { spotifyTracks, dodge, forceCollide } from "../actions";
+import {
+  spotifyTracks,
+  dodge,
+  forceCollide,
+  afMicroServiceGet,
+} from "../actions";
 import SortFormControl from "./SortFormControl";
 import AudioSample from "./AudioSample";
 
@@ -32,7 +37,7 @@ export default withTooltip(
         top: tempHeight * 0.15,
         bottom: tempHeight * 0.15,
         left: tempWidth * 0.0,
-        right: tempWidth * 0.0
+        right: tempWidth * 0.0,
       };
       const width = tempWidth - (margin.left + margin.right);
       const height = tempHeight - (margin.top + margin.bottom);
@@ -72,9 +77,9 @@ export default withTooltip(
           open: false,
           url: "",
           artist: "",
-          songTitle: ""
+          songTitle: "",
         },
-        tracks: {}
+        tracks: {},
       };
     }
 
@@ -86,9 +91,11 @@ export default withTooltip(
       const height = this.state.height;
       const radius = this.state.radius(height, width, 1000);
 
+      afMicroServiceGet();
+
       const getTracks = () => {
         if (this.state.isPublic) {
-          spotifyTracks.getPublicTracks().then(tracks => {
+          spotifyTracks.getPublicTracks().then((tracks) => {
             this.setState({ tracks: tracks });
             this.setState({ d3Status: "pending" });
           });
@@ -96,7 +103,7 @@ export default withTooltip(
         if (!this.state.isPublic) {
           spotifyTracks
             .getTracks(this.state.token, this.state.isPublic)
-            .then(tracks => {
+            .then((tracks) => {
               this.setState({ tracks: tracks });
               this.setState({ d3Status: "pending" });
               forceCollide(tracks, sortBy, radius, xScale, yScale).then(
@@ -129,7 +136,7 @@ export default withTooltip(
       }
     }
 
-    handleSortByChange = sortBy => {
+    handleSortByChange = (sortBy) => {
       this.setState({ sortBy: sortBy });
 
       switch (sortBy) {
@@ -162,8 +169,8 @@ export default withTooltip(
           title: songTitle,
           url: url,
           id: id,
-          token: token
-        }
+          token: token,
+        },
       });
     };
 
@@ -243,7 +250,7 @@ export default withTooltip(
                       strokeWidth={"3px"}
                       strokeOpacity="1"
                       opacity=".8"
-                      onMouseEnter={event => {
+                      onMouseEnter={(event) => {
                         if (tooltipTimeout) clearTimeout(tooltipTimeout);
                         this.props.showTooltip({
                           tooltipLeft: cx,
@@ -253,33 +260,33 @@ export default withTooltip(
                             songTitle: songTitle,
                             primaryGenre: primaryGenre,
                             sortBy: sortBy,
-                            sortByValue: sortByValue
-                          }
+                            sortByValue: sortByValue,
+                          },
                         });
                       }}
-                      onMouseLeave={event => {
+                      onMouseLeave={(event) => {
                         tooltipTimeout = setTimeout(() => {
                           this.props.hideTooltip();
                         }, 300);
                       }}
-                      onTouchStart={event => {
+                      onTouchStart={(event) => {
                         this.handleModalChange(event, {
                           modalData: {
                             primaryArtist: primaryArtist,
                             songTitle: songTitle,
                             url: url,
-                            id: id
-                          }
+                            id: id,
+                          },
                         });
                       }}
-                      onClick={event => {
+                      onClick={(event) => {
                         this.handleModalChange(event, {
                           modalData: {
                             primaryArtist: primaryArtist,
                             songTitle: songTitle,
                             url: url,
-                            id: id
-                          }
+                            id: id,
+                          },
                         });
                       }}
                     />
@@ -287,7 +294,7 @@ export default withTooltip(
                 })}
                 <LinePath
                   data={[width * 0.1, width * 0.9]}
-                  x={d => {
+                  x={(d) => {
                     return d;
                   }}
                   y={axisY}
