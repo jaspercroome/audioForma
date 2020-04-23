@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
+import { transition } from "d3-transition"
 
 import { scaleSequential, scaleOrdinal, scaleLinear } from "d3-scale";
 import { interpolateRainbow } from "d3-scale-chromatic";
@@ -25,15 +26,14 @@ export const Detail = (props) => {
   useEffect(() => {
     setPreviewId(props.previewId);
     afMicroServicePost(previewId).then((data) => {
-      setTrackAnalysis(data);
-      console.log(data);
+      const tempData = data.slice(0, 5000)
+      setTrackAnalysis(tempData);
     });
   }, [props.previewId]);
 
   useEffect(() => {
     const d3Data = [];
     if (trackAnalysis.length > 0) {
-      console.log(trackAnalysis);
       d3Data.push(trackAnalysis);
       setD3Data(d3Data);
     }
@@ -44,21 +44,26 @@ export const Detail = (props) => {
       {trackAnalysis.length > 0 ? (
         d3Data.map((obj) => {
           return obj.map((n) => {
+            const r = parseFloat(n["magnitude"]) * 0.1 + "vw"
+            const cx = xScale(parseFloat(n["circle_fifths_X"]))
+            const cy = yScale(parseFloat(n["circle_fifths_Y"]))
+            const delay = parseFloat(n["note_time"])
             return (
-              <circle
-                r={parseFloat(n["magnitude"]) * 0.1 + "vw"}
-                opacity={".25"}
+              <motion.circle
+                positionTransition
+                r={r}
+                animate={{ cx: cx, cy: cy }}
+                initial={false}
+                opacity={".05"}
                 key={n["octave"] + "_" + n["note_name"] + "_" + n["note_time"]}
-                cx={xScale(parseFloat(n["circle_fifths_X"]))}
-                cy={yScale(parseFloat(n["circle_fifths_Y"]))}
                 fill="black"
               />
             );
           });
         })
       ) : (
-        <p>{"loading..."}</p>
-      )}
+          <p>{"loading..."}</p>
+        )}
     </svg>
   );
 };
