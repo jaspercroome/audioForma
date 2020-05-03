@@ -4,7 +4,10 @@ import Button from "@material-ui/core/Button";
 
 import request from "request";
 
+require('dotenv').config()
+
 export default function GetToken(props) {
+  console.log(process.env)
   const [token, setToken] = useState(props.token);
   const client_id = process.env.REACT_APP_spotifyKey;
   const client_secret = process.env.REACT_APP_spotifySecretKey;
