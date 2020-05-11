@@ -68,7 +68,7 @@ const AudioSample = props => {
           <Fragment>
             <h2>{trackName + " | " + artist}</h2>
             <Detail previewId={previewId} />
-            <audio controls autoPlay name={trackName + " | " + artist}>
+            <audio controls autoPlay={false} name={trackName + " | " + artist}>
               <source src={url} type="audio/mpeg" />
             </audio>
           </Fragment>
