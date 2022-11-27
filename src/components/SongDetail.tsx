@@ -92,7 +92,7 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
                   key={index}
                   >
                   <sphereGeometry args={[rScale(item), 16, 16]} />
-                  <meshBasicMaterial
+                  <meshBasicMateria
                     color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
                     />
                 </mesh>
