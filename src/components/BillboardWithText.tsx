@@ -23,10 +23,10 @@ export const BillboardWithText = (props: TextProps) => {
       <Text
         fontSize={size ?? 0.75}
         outlineWidth="5%"
-        outlineColor="#111"
+        outlineColor="#EEE"
         anchorX="center"
         anchorY="bottom-baseline"
-        color="#EEE"
+        color="#111"
       >
         {text}
       </Text>
