@@ -40,6 +40,7 @@
   "devDependencies": {
     "@types/d3-scale": "^4.0.2",
     "@types/react": "^18.0.25",
+    "@types/request": "^2.48.8",
     "eslint": "^8.27.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.26.0",

@@ -1,9 +1,15 @@
 import { scaleLinear } from "d3-scale";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 import { BillboardWithText } from "./BillboardWithText";
 
-import { songs } from "../static/songs";
+import { SongJSON, songs } from "../static/songs";
 import { a, config, useSpring } from "@react-spring/three";
 import { rgb, hsl } from "d3-color";
 import { Tooltip } from "@mui/material";
@@ -12,7 +18,7 @@ type SpheresProps = {
   xRange: [number, number];
   yRange: [number, number];
   zRange: [number, number];
-  onClick: (arg0?: unknown) => void;
+  onClick: Dispatch<SetStateAction<SongJSON["string"] | undefined>>;
   showAxes: { showX: boolean; showY: boolean; showZ: boolean };
   selectedSong?: typeof songs[string];
 };
@@ -36,7 +42,11 @@ export const SongSpheres = (props: SpheresProps) => {
   let yScale = scaleLinear(yDomain, showY ? yRange : [0, 0]);
   let zScale = scaleLinear(zDomain, showZ ? zRange : [0, 0]);
 
-  const songArray = Object.entries(songs).map((d) => d[1]).filter(song=> {return typeof song.preview_url === 'string'})
+  const songArray = Object.entries(songs)
+    .map((d) => d[1])
+    .filter((song) => {
+      return typeof song.preview_url === "string";
+    });
   const tempObject = new THREE.Object3D();
   const tempColor = new THREE.Color();
 
@@ -47,7 +57,7 @@ export const SongSpheres = (props: SpheresProps) => {
     popularity: number;
   }) => {
     const { valence, danceability, energy, popularity } = values;
-    return hsl(danceability * valence * energy * 360, valence, 0.5).toString();
+    return hsl(danceability * valence * energy * 360, .5, 0.5).toString();
     // return rgb(255*valence,255*danceability,255*energy,1).toString()
   };
 
@@ -94,24 +104,25 @@ export const SongSpheres = (props: SpheresProps) => {
 
   return (
     <>
-        <a.instancedMesh
-          ref={ref}
-          args={[undefined, undefined, songArray.length]}
-          onClick={(e) => {
-            if (e.instanceId) {
-              const index = e.instanceId;
-              onClick(songArray[index]);
-            } else onClick(undefined);
-          }}
-        >
-          <sphereGeometry args={[0.1, 32, 32]}>
-            <instancedBufferAttribute
-              attach="attributes-color"
-              args={[colorArray, 3]}
-            />
-          </sphereGeometry>
-          <meshBasicMaterial vertexColors />
-        </a.instancedMesh>
+      <a.instancedMesh
+        castShadow={true}
+        ref={ref}
+        args={[undefined, undefined, songArray.length]}
+        onClick={(e) => {
+          if (e.instanceId) {
+            const index = e.instanceId;
+            onClick(songArray[index]);
+          } else onClick(undefined);
+        }}
+      >
+        <sphereGeometry args={[0.15, 32, 32]}>
+          <instancedBufferAttribute
+            attach="attributes-color"
+            args={[colorArray, 3]}
+          />
+        </sphereGeometry>
+        <meshBasicMaterial vertexColors />
+      </a.instancedMesh>
       {typeof selectedSong !== "undefined" && (
         <mesh
           position={[

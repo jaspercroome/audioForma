@@ -1,25 +1,24 @@
-import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
-import { Effects, OrbitControls, Plane } from "@react-three/drei";
+import { Canvas,  useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import Head from "next/head";
-import React, { useEffect, useRef, useState } from "react";
-import { UnrealBloomPass } from "three-stdlib";
+import React, { useEffect, useState } from "react";
 
 import styles from "../styles/Home.module.css";
 import { SongSpheres } from "../src";
 import { BillboardWithText } from "../src/components/BillboardWithText";
 import { SongJSON } from "../src/static/songs";
 import { Dialog, FormControlLabel, FormGroup, Switch } from "@mui/material";
-import Meyda from "meyda";
 import { SongDetail } from "../src/components";
 
-// extend objects from three to r3f
-extend({ UnrealBloomPass });
+
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ height: 800, width: 1440 });
   const [showX, setShowX] = useState(true);
   const [showY, setShowY] = useState(true);
   const [showZ, setShowZ] = useState(true);
+  const [showDividers, setShowDividers] = useState(false);
+  const [showGridHelpers, setShowGridHelpers] = useState(false);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -59,50 +58,65 @@ export default function Home() {
               children={<SongDetail song={selectedSong} />}
             />
           )}
-          <Canvas camera={{ position: [-4, 6, 12] }}>
+          <Canvas camera={{ position: [-4, 6, 12] }} shadows>
             {showDialog && <DisableRender />}
-            <color attach="background" args={["black"]} />
             {showY && showZ && (
               <>
-                <gridHelper
-                  args={[10, 10, 0xffffff]}
-                  rotation={[0, 0, -Math.PI / 2]}
-                />
-                <mesh>
-                  <boxGeometry args={[0.01, 9, 9]} />
-                  <meshPhongMaterial color={"grey"} />
-                </mesh>
-                <BillboardWithText position={[0, 5, 0]} text="Happy" />
-                <BillboardWithText position={[0, -5, 0]} text="Sad" />
-                <BillboardWithText position={[0, 0, -5]} text="Calm" />
-                <BillboardWithText position={[0, 0, 5]} text="Hyped Up" />
+                {showGridHelpers && (
+                  <gridHelper
+                    args={[10, 10, 0xffffff]}
+                    rotation={[0, 0, -Math.PI / 2]}
+                  />
+                )}
+                {showDividers && (
+                  <mesh receiveShadow castShadow>
+                    <boxGeometry args={[0.01, 9, 9]} />
+                    <meshPhongMaterial color={"grey"} />
+                  </mesh>
+                )}
               </>
             )}
             {showX && showY && (
               <>
-                <gridHelper
-                  args={[10, 10, 0xffffff]}
-                  rotation={[-Math.PI / 2, 0, 0]}
-                />
-                <mesh>
-                  <boxGeometry args={[9, 9, 0.01]} />
-                  <meshPhongMaterial color={"grey"} />
-                </mesh>
-                <BillboardWithText position={[0, 5, 0]} text="Happy" />
-                <BillboardWithText position={[0, -5, 0]} text="Sad" />
-                <BillboardWithText position={[-5, 0, 0]} text="Stand Still" />
-                <BillboardWithText position={[5, 0, 0]} text="Danceable" />
+                {showGridHelpers && (
+                  <gridHelper
+                    args={[10, 10, 0xffffff]}
+                    rotation={[-Math.PI / 2, 0, 0]}
+                  />
+                )}
+                {showDividers && (
+                  <mesh receiveShadow castShadow>
+                    <boxGeometry args={[9, 9, 0.01]} />
+                    <meshPhongMaterial color={"grey"} />
+                  </mesh>
+                )}
               </>
             )}
             {showZ && showX && (
               <>
-                <gridHelper args={[10, 10, 0xffffff]} />
-                <mesh>
-                  <boxGeometry args={[9, .01, 9]} />
-                  <meshPhongMaterial color={"grey"} />
-                </mesh>
+                {showGridHelpers && <gridHelper args={[10, 10, 0xffffff]} />}
+                {showDividers && (
+                  <mesh receiveShadow castShadow>
+                    <boxGeometry args={[9, 0.01, 9]} />
+                    <meshPhongMaterial color={"grey"} />
+                  </mesh>
+                )}
+              </>
+            )}
+            {showX && (
+              <>
                 <BillboardWithText position={[-5, 0, 0]} text="Stand Still" />
                 <BillboardWithText position={[5, 0, 0]} text="Danceable" />
+              </>
+            )}
+            {showY && (
+              <>
+                <BillboardWithText position={[0, 5, 0]} text="Happy" />
+                <BillboardWithText position={[0, -5, 0]} text="Sad" />
+              </>
+            )}
+            {showZ && (
+              <>
                 <BillboardWithText position={[0, 0, -5]} text="Calm" />
                 <BillboardWithText position={[0, 0, 5]} text="Hyped Up" />
               </>
@@ -115,19 +129,22 @@ export default function Home() {
               selectedSong={selectedSong}
               showAxes={{ showX, showY, showZ }}
             />
-            <ambientLight intensity={0.3} castShadow />
-            <directionalLight
-              intensity={0.2}
-              position={[-6, 7, 6]}
-              castShadow
-            />
+            <ambientLight intensity={0.5} />
+            <directionalLight intensity={0.8} position={[6, 7, 3]} castShadow />
+            <mesh
+              receiveShadow
+              rotation={[-Math.PI / 2, 0, 0]}
+              position={[0, -6, 0]}
+            >
+              <planeGeometry args={[30, 30]} />
+              <shadowMaterial transparent opacity={0.15} />
+            </mesh>
             <OrbitControls
               enableZoom
               maxDistance={12}
               maxPolarAngle={Math.PI}
               enableDamping
             />
-            <Post />
           </Canvas>
 
           <div
@@ -142,7 +159,7 @@ export default function Home() {
             <FormGroup>
               <FormControlLabel
                 label="Measure Danceability"
-                style={{ color: "whiteSmoke" }}
+                style={{ color: "#777" }}
                 control={
                   <Switch
                     defaultChecked
@@ -156,7 +173,7 @@ export default function Home() {
               />
               <FormControlLabel
                 label="Measure Happiness"
-                style={{ color: "whiteSmoke" }}
+                style={{ color: "#777" }}
                 control={
                   <Switch
                     defaultChecked
@@ -170,7 +187,7 @@ export default function Home() {
               />
               <FormControlLabel
                 label="Measure Energy"
-                style={{ color: "whiteSmoke" }}
+                style={{ color: "#777" }}
                 control={
                   <Switch
                     defaultChecked
@@ -182,6 +199,32 @@ export default function Home() {
                   />
                 }
               />
+              <FormControlLabel
+                label="Show Dividers"
+                style={{ color: "#777" }}
+                control={
+                  <Switch
+                    color="default"
+                    value={showDividers}
+                    onChange={() => {
+                      setShowDividers(!showDividers);
+                    }}
+                  />
+                }
+              />
+              <FormControlLabel
+                label="Show Grids"
+                style={{ color: "#777" }}
+                control={
+                  <Switch
+                    color="default"
+                    value={showGridHelpers}
+                    onChange={() => {
+                      setShowGridHelpers(!showGridHelpers);
+                    }}
+                  />
+                }
+              />
             </FormGroup>
           </div>
         </div>
@@ -189,10 +232,3 @@ export default function Home() {
     </div>
   );
 }
-const Post = () => {
-  return (
-    <Effects disableGamma>
-      <unrealBloomPass threshold={0.11} strength={0.6} radius={0.1} />
-    </Effects>
-  );
-};

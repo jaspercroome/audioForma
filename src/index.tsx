@@ -1,1 +1,1 @@
-export {Box, Line, SongSpheres, BillboardWithText} from './components'
+export {Box, SongSpheres, BillboardWithText} from './components'

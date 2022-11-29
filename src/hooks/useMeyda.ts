@@ -1,19 +1,19 @@
 import { useEffect, useState, useRef } from "react";
-import Meyda from "meyda";
+import Meyda, { MeydaAudioFeature, MeydaFeaturesObject } from "meyda";
 import { isEqual } from "lodash";
 
 type MeydaConfig = {
-  audioContext?: AudioContext;
-  source?: any;
+  audioContext?: AudioContext | null;
+  source?: AudioNode | null;
   bufferSize?: number;
-  featureExtractors?: string[];
+  featureExtractors?: MeydaAudioFeature[];
 };
 
 export const useMeydaAnalyzer = (config: MeydaConfig) => {
   const [analyzer, setAnalyzer] = useState<Meyda.MeydaAnalyzer>();
   const [audioContext, setAudioContext] = useState<AudioContext>();
   const [source, setSource] = useState<AudioNode>();
-  const [features, setFeatures] = useState<Meyda.MeydaAudioFeature[]>();
+  const [features, setFeatures] = useState<Meyda.MeydaFeaturesObject>();
   const featuresRef = useRef(features);
   useEffect(() => {
     if (source && audioContext && !analyzer) {
@@ -23,7 +23,7 @@ export const useMeydaAnalyzer = (config: MeydaConfig) => {
         source: source,
         bufferSize: config.bufferSize || 512,
         featureExtractors: config.featureExtractors || ["rms"],
-        callback: (nextFeatures) => {
+        callback: (nextFeatures: MeydaFeaturesObject) => {
           const currFeatures = featuresRef.current;
           if (!isEqual(currFeatures, nextFeatures)) {
             setFeatures(nextFeatures);

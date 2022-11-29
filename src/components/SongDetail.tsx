@@ -1,8 +1,7 @@
 import { OrbitControls } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { scaleLinear } from "d3-scale";
-import Meyda from "meyda";
-import React, { useEffect, useRef, useState } from "react";
+import React, { LegacyRef, useEffect, useRef, useState } from "react";
 import { useMeydaAnalyzer } from "../hooks/useMeyda";
 import { noteLocations } from "../static/constants";
 import { SongJSON } from "../static/songs";
@@ -12,18 +11,8 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
   const { song } = props;
   //set up audio elements for analysis
   const audioRef = useRef<HTMLAudioElement>();
-  const [totalTicks, setTotalTicks] = useState(0);
   const audioContext = new AudioContext();
   let audioSource;
-
-  const [chromaArray, setChromaArray] = useState<number[][]>([
-    new Array(12).fill(0),
-  ]);
-
-  const [trailingTenAverage, setTrailingTenAverage] = useState<number[]>(
-    new Array(12).fill(0)
-  );
-
   const BUFFER_SIZE = 512;
 
   const {
@@ -47,20 +36,30 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
     }
   }, [audioRef.current]);
 
+  // arrays for rendering dots
+  const [chromaArray, setChromaArray] = useState<number[][]>([
+    new Array(12).fill(0),
+  ]);
+
+  const [trailingTenAverage, setTrailingTenAverage] = useState<number[]>(
+    new Array(12).fill(0)
+  );
+
   useEffect(() => {
-    if (Boolean(features)) {
-      setTotalTicks((prior) => prior + 1);
-      const { chroma, spectralCentroid } = features;
+    if (typeof features !== "undefined") {
+      const { chroma } = features;
       chromaArray.push(chroma);
+
       const lastTenChromaItems = chromaArray.filter((item, index) => {
-        return index >= chromaArray.length - 6;
+        return index >= chromaArray.length - 11;
       });
+
       const lastTenTotal = new Array(12).fill(0);
       const lastTenAverage = new Array(12).fill(0);
       lastTenTotal.forEach((note, index) => {
         lastTenChromaItems.forEach((chroma, chromaIndex) => {
           lastTenTotal[index] += chroma[index];
-          lastTenAverage[index] = lastTenTotal[index] / 5;
+          lastTenAverage[index] = lastTenTotal[index] / 10;
         });
       });
       setTrailingTenAverage(lastTenAverage);
@@ -76,40 +75,31 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
       {song.preview_url ? (
         <div style={{ height: "400px" }}>
           <Canvas>
-            <color attach="background" args={["black"]} />
-            {trailingTenAverage.map((item, index) => (
-              <>
-                <mesh
-                  position={[
-                    Math.sin(noteLocations[index].angle/ 180 * Math.PI) *
-                      3 *
-                      item,
-                    Math.cos((noteLocations[index].angle /180) * Math.PI) *
-                      3 *
-                      item,
-                    0,
-                  ]}
-                  key={index}
-                  >
-                  <sphereGeometry args={[rScale(item), 16, 16]} />
-                  <meshBasicMateria
-                    color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
+            {/* <color attach="background" args={["black"]} /> */}
+            {trailingTenAverage.map((item, index) => {
+              const itemX =
+                Math.sin((noteLocations[index].angle / 180) * Math.PI) *
+                3 *
+                item;
+              const itemY =
+                Math.cos((noteLocations[index].angle / 180) * Math.PI) *
+                3 *
+                item;
+                return (
+                  <React.Fragment key={noteLocations[index].note}>
+                    <mesh position={[itemX, itemY, 0]}>
+                      <sphereGeometry args={[rScale(item), 16, 16]} />
+                      <meshBasicMaterial
+                        color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
+                      />
+                    </mesh>
+                    <BillboardWithText
+                      text={item > 0 ? noteLocations[index].note : 'Press Play!'}
+                      position={item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0,0,0]}
                     />
-                </mesh>
-                <BillboardWithText
-                  text={noteLocations[index].note}
-                  position={[
-                    Math.sin(noteLocations[index].angle/ 180 * Math.PI) *
-                      3 *
-                      item,
-                    Math.cos((noteLocations[index].angle /180) * Math.PI) *
-                      3 *
-                      item,
-                    rScale(item)+.03,
-                  ]}
-                />
-              </>
-            ))}
+                  </React.Fragment>
+                );
+            })}
             <OrbitControls
               enableZoom
               maxDistance={12}
@@ -122,7 +112,7 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
             controls
             crossOrigin="anonymous"
             src={song.preview_url}
-            ref={audioRef}
+            ref={audioRef as LegacyRef<HTMLAudioElement>}
           />
         </div>
       ) : (

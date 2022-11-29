@@ -19,6 +19,7 @@ export const BillboardWithText = (props: TextProps) => {
       lockZ={false}
       position={position}
       onClick={onClick}
+      castShadow
     >
       <Text
         fontSize={size ?? 0.75}
@@ -27,6 +28,7 @@ export const BillboardWithText = (props: TextProps) => {
         anchorX="center"
         anchorY="bottom-baseline"
         color="#111"
+        castShadow
       >
         {text}
       </Text>
