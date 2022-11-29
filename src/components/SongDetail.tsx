@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { scaleLinear } from "d3-scale";
@@ -15,6 +16,8 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
   let audioSource;
   const BUFFER_SIZE = 512;
 
+  const [canVisualize, setCanVisualize] = useState(false);
+
   const {
     features,
     setAudioContext: setMeydaAnalyzerAudioContext,
@@ -27,12 +30,17 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
   });
 
   useEffect(() => {
-    if (audioRef && audioRef.current) {
-      audioSource = audioContext.createMediaElementSource(
-        audioRef.current as unknown as HTMLAudioElement
-      );
-      setMeydaAnalyzerSource(audioSource);
-      setMeydaAnalyzerAudioContext(audioContext);
+    try {
+      if (audioRef && audioRef.current) {
+        audioSource = audioContext.createMediaElementSource(
+          audioRef.current as unknown as HTMLAudioElement
+        );
+        setMeydaAnalyzerSource(audioSource);
+        setMeydaAnalyzerAudioContext(audioContext);
+      }
+      setCanVisualize(true);
+    } catch {
+      setCanVisualize(false);
     }
   }, [audioRef.current]);
 
@@ -74,39 +82,47 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
       <h4>{song.artists[0].name}</h4>
       {song.preview_url ? (
         <div style={{ height: "400px" }}>
+          {canVisualize ? (
           <Canvas>
-            {/* <color attach="background" args={["black"]} /> */}
-            {trailingTenAverage.map((item, index) => {
-              const itemX =
-                Math.sin((noteLocations[index].angle / 180) * Math.PI) *
-                3 *
-                item;
-              const itemY =
-                Math.cos((noteLocations[index].angle / 180) * Math.PI) *
-                3 *
-                item;
-                return (
-                  <React.Fragment key={noteLocations[index].note}>
-                    <mesh position={[itemX, itemY, 0]}>
-                      <sphereGeometry args={[rScale(item), 16, 16]} />
-                      <meshBasicMaterial
-                        color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
-                      />
-                    </mesh>
-                    <BillboardWithText
-                      text={item > 0 ? noteLocations[index].note : 'Press Play!'}
-                      position={item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0,0,0]}
-                    />
-                  </React.Fragment>
-                );
-            })}
-            <OrbitControls
-              enableZoom
-              maxDistance={12}
-              maxPolarAngle={Math.PI}
-              enableDamping
-            />
-          </Canvas>
+          {/* <color attach="background" args={["black"]} /> */}
+          {trailingTenAverage.map((item, index) => {
+            const itemX =
+              Math.sin((noteLocations[index].angle / 180) * Math.PI) *
+              3 *
+              item;
+            const itemY =
+              Math.cos((noteLocations[index].angle / 180) * Math.PI) *
+              3 *
+              item;
+            return (
+              <React.Fragment key={noteLocations[index].note}>
+                <mesh position={[itemX, itemY, 0]}>
+                  <sphereGeometry args={[rScale(item), 16, 16]} />
+                  <meshBasicMaterial
+                    color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
+                  />
+                </mesh>
+                <BillboardWithText
+                  text={item > 0 ? noteLocations[index].note : "Press Play!"}
+                  position={
+                    item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0, 0, 0]
+                  }
+                />
+              </React.Fragment>
+            );
+          })}
+          <OrbitControls
+            enableZoom
+            maxDistance={12}
+            maxPolarAngle={Math.PI}
+            enableDamping
+          />
+        </Canvas>
+          ) : (
+            <Typography variant='h2'>
+              Try this app on firefox for the full experience!
+            </Typography>
+          )}
           <audio
             id="detailAudioPlayer"
             controls
