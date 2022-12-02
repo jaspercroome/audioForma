@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { scaleLinear } from "d3-scale";
 import React, { LegacyRef, useEffect, useRef, useState } from "react";
 import { useMeydaAnalyzer } from "../hooks/useMeyda";
+import { afMicroServicePost } from "../queries/audioforma";
 import { noteLocations } from "../static/constants";
 import { SongJSON } from "../static/songs";
 import { BillboardWithText } from "./BillboardWithText";
@@ -12,7 +13,7 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
   //set up audio elements for analysis
   const audioRef = useRef<HTMLAudioElement>();
   const audioContext = new AudioContext();
-  let audioSource;
+  const [audioSource, setAudioSource] = useState<MediaElementAudioSourceNode>();
   const BUFFER_SIZE = 512;
 
   const {
@@ -26,13 +27,27 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
     bufferSize: BUFFER_SIZE,
   });
 
+  const previewId = song.preview_url?.split("/", 5)[4].split("?", 1)[0] || "";
+
+  const [data, setData] = useState();
+
   useEffect(() => {
-    if (audioRef && audioRef.current) {
-      audioSource = audioContext.createMediaElementSource(
-        audioRef.current as unknown as HTMLAudioElement
+    const songData = afMicroServicePost(previewId);
+    setData(songData);
+  }, [song]);
+
+  console.log(data)
+
+  useEffect(() => {
+    if (audioRef && audioRef.current && !Boolean(audioSource)) {
+      console.log(audioRef.current);
+      setAudioSource(
+        audioContext.createMediaElementSource(
+          audioRef.current as unknown as HTMLAudioElement
+        )
       );
-      setMeydaAnalyzerSource(audioSource);
-      setMeydaAnalyzerAudioContext(audioContext);
+      // setMeydaAnalyzerSource(audioSource);
+      // setMeydaAnalyzerAudioContext(audioContext);
     }
   }, [audioRef.current]);
 
@@ -85,20 +100,22 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
                 Math.cos((noteLocations[index].angle / 180) * Math.PI) *
                 3 *
                 item;
-                return (
-                  <React.Fragment key={noteLocations[index].note}>
-                    <mesh position={[itemX, itemY, 0]}>
-                      <sphereGeometry args={[rScale(item), 16, 16]} />
-                      <meshBasicMaterial
-                        color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
-                      />
-                    </mesh>
-                    <BillboardWithText
-                      text={item > 0 ? noteLocations[index].note : 'Press Play!'}
-                      position={item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0,0,0]}
+              return (
+                <React.Fragment key={noteLocations[index].note}>
+                  <mesh position={[itemX, itemY, 0]}>
+                    <sphereGeometry args={[rScale(item), 16, 16]} />
+                    <meshBasicMaterial
+                      color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
                     />
-                  </React.Fragment>
-                );
+                  </mesh>
+                  <BillboardWithText
+                    text={item > 0 ? noteLocations[index].note : "Press Play!"}
+                    position={
+                      item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0, 0, 0]
+                    }
+                  />
+                </React.Fragment>
+              );
             })}
             <OrbitControls
               enableZoom

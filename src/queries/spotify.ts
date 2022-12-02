@@ -5,8 +5,10 @@ const headers = new Headers({
 });
 
 export const requestAuthToken = async () => {
-  if (localStorage.getItem("spotifyAuthToken")) {
-    return JSON.parse(localStorage.getItem("spotifyAuthToken") ?? "");
+  if (typeof localStorage !== "undefined") {
+    if (localStorage.getItem("spotifyAuthToken")) {
+      return JSON.parse(localStorage.getItem("spotifyAuthToken") ?? "");
+    }
   } else {
     const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
