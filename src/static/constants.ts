@@ -20,3 +20,4 @@ export const noteLocations: {
   { note: "A#", angle: 300, x: -0.8660254038, y: 0.5 },
   { note: "B", angle: 150, x: 0.5, y: -0.8660254038 },
 ];
+export const octaves = [0, 1, 2, 3, 4, 5, 6, 7, 8];

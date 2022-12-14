@@ -12,7 +12,6 @@ import { BillboardWithText } from "./BillboardWithText";
 import { SongJSON, songs } from "../static/songs";
 import { a, config, useSpring } from "@react-spring/three";
 import { rgb, hsl } from "d3-color";
-import { Tooltip } from "@mui/material";
 
 type SpheresProps = {
   xRange: [number, number];
@@ -21,10 +20,11 @@ type SpheresProps = {
   onClick: Dispatch<SetStateAction<SongJSON["string"] | undefined>>;
   showAxes: { showX: boolean; showY: boolean; showZ: boolean };
   selectedSong?: typeof songs[string];
+  filteredArtist?: string
 };
 
 export const SongSpheres = (props: SpheresProps) => {
-  const { xRange, yRange, zRange, selectedSong, onClick, showAxes } = props;
+  const { xRange, yRange, zRange, selectedSong, onClick, showAxes, filteredArtist } = props;
   const { showX, showY, showZ } = showAxes;
   const [loaded, setLoaded] = useState(false);
   const { scale } = useSpring({
@@ -46,7 +46,10 @@ export const SongSpheres = (props: SpheresProps) => {
     .map((d) => d[1])
     .filter((song) => {
       return typeof song.preview_url === "string";
-    });
+    }).filter(song=>{
+      return song.artists[0].name === filteredArtist
+    })
+
   const tempObject = new THREE.Object3D();
   const tempColor = new THREE.Color();
 

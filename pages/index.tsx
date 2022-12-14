@@ -1,4 +1,4 @@
-import { Canvas,  useFrame } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
@@ -6,11 +6,10 @@ import React, { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { SongSpheres } from "../src";
 import { BillboardWithText } from "../src/components/BillboardWithText";
-import { SongJSON } from "../src/static/songs";
+import { SongJSON, songs } from "../src/static/songs";
 import { Dialog, FormControlLabel, FormGroup, Switch } from "@mui/material";
 import { SongDetail } from "../src/components";
-
-
+import { isString, uniq } from "lodash";
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ height: 800, width: 1440 });
@@ -29,7 +28,14 @@ export default function Home() {
   // for when the
   const DisableRender = () => useFrame(() => null, 1000);
 
+  const availableSongs = Object.entries(songs)
+    .map((d) => d[1])
+    .filter((song) => isString(song.preview_url));
+
+  const availableArists = uniq(availableSongs.map(song=>song.artists[0].name)).sort()
+
   const [selectedSong, setSelectedSong] = useState<SongJSON[string]>();
+  const [filteredArtist, setFilteredArtist] = useState(availableArists[42]);
   const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
@@ -52,6 +58,7 @@ export default function Home() {
             <Dialog
               open={showDialog}
               fullWidth
+              style={{ height: "900px" }}
               onClose={() => {
                 setShowDialog(false);
               }}
@@ -128,6 +135,7 @@ export default function Home() {
               onClick={setSelectedSong}
               selectedSong={selectedSong}
               showAxes={{ showX, showY, showZ }}
+              filteredArtist={filteredArtist}
             />
             <ambientLight intensity={0.5} />
             <directionalLight intensity={0.8} position={[6, 7, 3]} castShadow />

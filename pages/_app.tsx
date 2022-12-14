@@ -5,7 +5,13 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { requestAuthToken } from "../src/queries/spotify";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+      },
+    },
+  });
   const token = requestAuthToken();
   token
     .then(() => console.info("Spotify Auth Token successfully received"))

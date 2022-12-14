@@ -15,6 +15,7 @@
     "@react-spring/three": "^9.5.5",
     "@react-three/drei": "^9.40.0",
     "@react-three/fiber": "^8.9.1",
+    "@types/axios": "^0.14.0",
     "@types/d3-color": "^3.1.0",
     "@types/d3-dsv": "^3.0.0",
     "@types/lodash": "^4.14.190",
