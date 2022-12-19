@@ -1,15 +1,17 @@
+import { Dialog } from "@mui/material";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
+import { Vector3 } from "three";
 
 import styles from "../styles/Home.module.css";
 import { SongSpheres } from "../src";
 import { BillboardWithText } from "../src/components/BillboardWithText";
 import { SongJSON, songs } from "../src/static/songs";
-import { Dialog, FormControlLabel, FormGroup, Switch } from "@mui/material";
 import { SongDetail } from "../src/components";
 import { isString, uniq } from "lodash";
+import { SideBar } from "../src/components/SideBar";
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ height: 800, width: 1440 });
@@ -17,7 +19,7 @@ export default function Home() {
   const [showY, setShowY] = useState(true);
   const [showZ, setShowZ] = useState(true);
   const [showDividers, setShowDividers] = useState(false);
-  const [showGridHelpers, setShowGridHelpers] = useState(false);
+  const [showGridHelpers, setShowGridHelpers] = useState(true);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -32,17 +34,38 @@ export default function Home() {
     .map((d) => d[1])
     .filter((song) => isString(song.preview_url));
 
-  const availableArists = uniq(availableSongs.map(song=>song.artists[0].name)).sort()
+  const availableArtists = uniq(
+    availableSongs.map((song) => song.artists[0].name)
+  ).sort();
 
   const [selectedSong, setSelectedSong] = useState<SongJSON[string]>();
-  const [filteredArtist, setFilteredArtist] = useState(availableArists[42]);
+  const [hoveredSong, setHoveredSong] = useState<SongJSON[string]>();
+  const [songHistory, setSongHistory] = useState<Array<SongJSON[string]>>([]);
+  const [filteredArtist, setFilteredArtist] = useState<string>();
   const [showDialog, setShowDialog] = useState(false);
 
-  useEffect(() => {
-    if (typeof selectedSong?.name !== "undefined") {
-      setShowDialog(true);
+  const [showSidebar, setShowSideBar] = useState(false);
+
+  const handleSideBarClose = () => {
+    setShowSideBar(false);
+  };
+
+  const toggleSideBar = () => {
+    setShowSideBar((prior)=>!prior)
+  }
+
+  const handleClick = (selectedSong?: SongJSON[string]) => {
+    setSelectedSong(() => selectedSong);
+    if (selectedSong) {
+      setShowDialog(() => true);
+      setSongHistory((prior) => [selectedSong, ...prior]);
     }
-  }, [selectedSong]);
+  };
+  const handleMouseOver = (song?: SongJSON[string]) => {
+    setHoveredSong(() => song);
+  };
+
+  const [lookAtTarget, setLookAtTarget] = useState(new Vector3(0, 0, 0));
 
   return (
     <div className={styles.container}>
@@ -132,12 +155,15 @@ export default function Home() {
               xRange={[-5, 5]}
               yRange={[-5, 5]}
               zRange={[-5, 5]}
-              onClick={setSelectedSong}
+              onClick={handleClick}
+              onMouseOver={handleMouseOver}
+              hoveredSong={hoveredSong}
               selectedSong={selectedSong}
               showAxes={{ showX, showY, showZ }}
               filteredArtist={filteredArtist}
+              setLookAtTarget={setLookAtTarget}
             />
-            <ambientLight intensity={0.5} />
+            <ambientLight intensity={0.7} />
             <directionalLight intensity={0.8} position={[6, 7, 3]} castShadow />
             <mesh
               receiveShadow
@@ -152,89 +178,30 @@ export default function Home() {
               maxDistance={12}
               maxPolarAngle={Math.PI}
               enableDamping
+              target={lookAtTarget}
             />
           </Canvas>
 
-          <div
-            style={{
-              position: "relative",
-              bottom: "400px",
-              left: "10px",
-              height: "100px",
-              width: "400px",
-            }}
-          >
-            <FormGroup>
-              <FormControlLabel
-                label="Measure Danceability"
-                style={{ color: "#777" }}
-                control={
-                  <Switch
-                    defaultChecked
-                    color="default"
-                    value={showX}
-                    onChange={() => {
-                      setShowX(!showX);
-                    }}
-                  />
-                }
-              />
-              <FormControlLabel
-                label="Measure Happiness"
-                style={{ color: "#777" }}
-                control={
-                  <Switch
-                    defaultChecked
-                    color="default"
-                    value={showY}
-                    onChange={() => {
-                      setShowY(!showY);
-                    }}
-                  />
-                }
-              />
-              <FormControlLabel
-                label="Measure Energy"
-                style={{ color: "#777" }}
-                control={
-                  <Switch
-                    defaultChecked
-                    color="default"
-                    value={showZ}
-                    onChange={() => {
-                      setShowZ(!showZ);
-                    }}
-                  />
-                }
-              />
-              <FormControlLabel
-                label="Show Dividers"
-                style={{ color: "#777" }}
-                control={
-                  <Switch
-                    color="default"
-                    value={showDividers}
-                    onChange={() => {
-                      setShowDividers(!showDividers);
-                    }}
-                  />
-                }
-              />
-              <FormControlLabel
-                label="Show Grids"
-                style={{ color: "#777" }}
-                control={
-                  <Switch
-                    color="default"
-                    value={showGridHelpers}
-                    onChange={() => {
-                      setShowGridHelpers(!showGridHelpers);
-                    }}
-                  />
-                }
-              />
-            </FormGroup>
-          </div>
+          <SideBar
+            availableArtists={availableArtists}
+            filteredArtist={filteredArtist}
+            setFilteredArtist={setFilteredArtist}
+            showX={showX}
+            showY={showY}
+            showZ={showZ}
+            setShowX={setShowX}
+            setShowY={setShowY}
+            setShowZ={setShowZ}
+            showDividers={showDividers}
+            setShowDividers={setShowDividers}
+            showGridHelpers={showGridHelpers}
+            setShowGridHelpers={setShowGridHelpers}
+            open={showSidebar}
+            onClose={handleSideBarClose}
+            onClickTab={toggleSideBar}
+            songHistory={songHistory}
+            onClickListItem={handleClick}
+          />
         </div>
       </main>
     </div>
