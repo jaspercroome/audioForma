@@ -1,6 +1,7 @@
 import { Dialog } from "@mui/material";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { isString, uniq } from "lodash";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { Vector3 } from "three";
@@ -10,8 +11,8 @@ import { SongSpheres } from "../src";
 import { BillboardWithText } from "../src/components/BillboardWithText";
 import { SongJSON, songs } from "../src/static/songs";
 import { SongDetail } from "../src/components";
-import { isString, uniq } from "lodash";
 import { SideBar } from "../src/components/SideBar";
+import { TopBar } from "../src/components/TopBar";
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ height: 800, width: 1440 });
@@ -35,7 +36,11 @@ export default function Home() {
     .filter((song) => isString(song.preview_url));
 
   const availableArtists = uniq(
-    availableSongs.map((song) => song.artists[0].name)
+    availableSongs.map((song) => {
+      const artistName = song.artists[0].name
+      const songCount = availableSongs.filter(song=>song.artists[0].name === artistName).length
+     return  `${artistName} (${songCount} song${songCount !== 1 ? 's' : ''})`
+    })
   ).sort();
 
   const [selectedSong, setSelectedSong] = useState<SongJSON[string]>();
@@ -51,18 +56,28 @@ export default function Home() {
   };
 
   const toggleSideBar = () => {
-    setShowSideBar((prior)=>!prior)
-  }
+    setShowSideBar((prior) => !prior);
+  };
 
   const handleClick = (selectedSong?: SongJSON[string]) => {
     setSelectedSong(() => selectedSong);
     if (selectedSong) {
       setShowDialog(() => true);
-      setSongHistory((prior) => [selectedSong, ...prior]);
+      setSongHistory((prior) => uniq([selectedSong, ...prior]));
     }
   };
   const handleMouseOver = (song?: SongJSON[string]) => {
     setHoveredSong(() => song);
+  };
+
+  const handleArtistSearchChange = (value?: string | null) => {
+    if (value) {
+      const trimmedValue = value.split('(')[0].trimEnd()
+      setFilteredArtist(trimmedValue);
+    }
+    else {
+      setFilteredArtist(undefined);
+    }
   };
 
   const [lookAtTarget, setLookAtTarget] = useState(new Vector3(0, 0, 0));
@@ -76,6 +91,10 @@ export default function Home() {
       </Head>
 
       <main>
+        <TopBar
+          availableArtists={availableArtists}
+          handleChange={handleArtistSearchChange}
+        />
         <div id="canvas-container" style={{ height: dimensions.height }}>
           {showDialog && selectedSong && (
             <Dialog

@@ -1,11 +1,8 @@
-import { Typography } from "@mui/material";
-import { display } from "@mui/system";
+import { Divider, Typography } from "@mui/material";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { scaleLinear } from "d3-scale";
 import React, { useEffect, useRef, useState } from "react";
-import { useAudio, useDebounce, useTimeoutFn } from "react-use";
-import { HTMLMediaState } from "react-use/lib/factory/createHTMLMediaHook";
 import {
   useAfMicroServicePost,
   FormattedAFData,
@@ -41,10 +38,11 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
   }, [isLoading, isError, afMicroServiceError, songData]);
 
   return (
-    <div>
+    <div style={{ padding: "0px 16px 0px 16px" }}>
       <h2>
         {song.name} - {song.artists[0].name}
       </h2>
+      <Divider />
       {song.preview_url ? (
         <div
           style={{
@@ -55,7 +53,12 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
             flexDirection: "column",
           }}
         >
-          {!songData && <Typography variant="h1">Loading...</Typography>}
+          {!songData && (
+            <div style={{display:'flex',flexDirection:'column',alignContent:'center'}}>
+              <Typography variant="h1">Loading...</Typography>
+              <Typography variant="caption">(this generally takes 5-10 seconds)</Typography>
+            </div>
+          )}
           {songData && isPlaying && (
             <>
               <Canvas>
@@ -129,15 +132,17 @@ export const SongDetailSpheres = (props: {
     const elapsedMilliseconds = clock.getElapsedTime() * 1000;
     const currentSongData = getCurrentSongData(songData, elapsedMilliseconds);
     setTime(currentSongData.time);
-    camera.position.y = Math.sin(state.clock.getElapsedTime()) * 2.5;
-    camera.position.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 5;
+    camera.position.y = Math.sin(state.clock.getElapsedTime()) * 4;
+    camera.position.x = Math.sin(state.clock.getElapsedTime() * 0.3) * 5;
   }, 0);
 
-  const rScale = scaleLinear().domain([0, maxMagnitude]).range([0.01, 1]);
+  const rScale = scaleLinear().domain([0.01, maxMagnitude/2]).range([0.01, .5]);
   const yScale = scaleLinear().domain([0, 8]).range([-3, 3]);
   const fontSizeScale = scaleLinear()
-    .domain([0, maxMagnitude])
-    .range([0.01, 0.5]);
+    .domain([0.01, maxMagnitude])
+    .range([0.01, 1]);
+
+    rScale.clamp(true)
 
   return songData ? (
     <>
@@ -165,7 +170,7 @@ export const SongDetailSpheres = (props: {
                 </mesh>
                 <BillboardWithText
                   text={magnitude > 0.6 ? note_name : ""}
-                  position={[x * 4, yScale(noteOctave), z * 4]}
+                  position={[x * 3, yScale(noteOctave), z * 3]}
                   size={fontSizeScale(magnitude)}
                 />
               </React.Fragment>
