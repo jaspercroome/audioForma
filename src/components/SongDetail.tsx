@@ -1,139 +1,182 @@
-import { Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 import { OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { scaleLinear } from "d3-scale";
-import React, { LegacyRef, useEffect, useRef, useState } from "react";
-import { useMeydaAnalyzer } from "../hooks/useMeyda";
-import { noteLocations } from "../static/constants";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  useAfMicroServicePost,
+  FormattedAFData,
+} from "../hooks/useAfMicroService";
+import { noteLocations, octaves } from "../static/constants";
 import { SongJSON } from "../static/songs";
 import { BillboardWithText } from "./BillboardWithText";
 
 export const SongDetail = (props: { song: SongJSON[string] }) => {
   const { song } = props;
-  //set up audio elements for analysis
-  const audioRef = useRef<HTMLAudioElement>();
-  const audioContext = new AudioContext();
-  let audioSource;
-  const BUFFER_SIZE = 512;
 
-  const [canVisualize, setCanVisualize] = useState(false);
+  const previewId = song.preview_url?.split("/", 5)[4].split("?", 1)[0] || "";
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const {
-    features,
-    setAudioContext: setMeydaAnalyzerAudioContext,
-    setSource: setMeydaAnalyzerSource,
-  } = useMeydaAnalyzer({
-    audioContext: null,
-    source: null,
-    featureExtractors: ["chroma", "spectralCentroid"],
-    bufferSize: BUFFER_SIZE,
-  });
+    data: songData,
+    isLoading,
+    isError,
+    error: afMicroServiceError,
+  } = useAfMicroServicePost(previewId);
 
   useEffect(() => {
-    try {
-      if (audioRef && audioRef.current) {
-        audioSource = audioContext.createMediaElementSource(
-          audioRef.current as unknown as HTMLAudioElement
-        );
-        setMeydaAnalyzerSource(audioSource);
-        setMeydaAnalyzerAudioContext(audioContext);
-      }
-      setCanVisualize(true);
-    } catch {
-      setCanVisualize(false);
+    if (isLoading) {
+      console.log("loading data from af microservice");
+    } else if (isError) {
+      console.error(afMicroServiceError);
+    } else if (songData) {
+      console.log("loaded!");
     }
-  }, [audioRef.current]);
-
-  // arrays for rendering dots
-  const [chromaArray, setChromaArray] = useState<number[][]>([
-    new Array(12).fill(0),
-  ]);
-
-  const [trailingTenAverage, setTrailingTenAverage] = useState<number[]>(
-    new Array(12).fill(0)
-  );
-
-  useEffect(() => {
-    if (typeof features !== "undefined") {
-      const { chroma } = features;
-      chromaArray.push(chroma);
-
-      const lastTenChromaItems = chromaArray.filter((item, index) => {
-        return index >= chromaArray.length - 11;
-      });
-
-      const lastTenTotal = new Array(12).fill(0);
-      const lastTenAverage = new Array(12).fill(0);
-      lastTenTotal.forEach((note, index) => {
-        lastTenChromaItems.forEach((chroma, chromaIndex) => {
-          lastTenTotal[index] += chroma[index];
-          lastTenAverage[index] = lastTenTotal[index] / 10;
-        });
-      });
-      setTrailingTenAverage(lastTenAverage);
-    }
-  }, [features, audioContext.currentTime]);
-
-  const rScale = scaleLinear().domain([0.5, 1]).range([0.01, 1]);
+  }, [isLoading, isError, afMicroServiceError, songData]);
 
   return (
-    <div style={{ height: "600px" }}>
-      <h2>{song.name}</h2>
-      <h4>{song.artists[0].name}</h4>
+    <div style={{ padding: "0px 16px 0px 16px" }}>
+      <h2>
+        {song.name} - {song.artists[0].name}
+      </h2>
+      <Divider />
       {song.preview_url ? (
-        <div style={{ height: "400px" }}>
-          {canVisualize ? (
-          <Canvas>
-          {/* <color attach="background" args={["black"]} /> */}
-          {trailingTenAverage.map((item, index) => {
-            const itemX =
-              Math.sin((noteLocations[index].angle / 180) * Math.PI) *
-              3 *
-              item;
-            const itemY =
-              Math.cos((noteLocations[index].angle / 180) * Math.PI) *
-              3 *
-              item;
-            return (
-              <React.Fragment key={noteLocations[index].note}>
-                <mesh position={[itemX, itemY, 0]}>
-                  <sphereGeometry args={[rScale(item), 16, 16]} />
-                  <meshBasicMaterial
-                    color={`hsl(${noteLocations[index].angle}, 70%, 60%)`}
-                  />
-                </mesh>
-                <BillboardWithText
-                  text={item > 0 ? noteLocations[index].note : "Press Play!"}
-                  position={
-                    item > 0 ? [itemX, itemY, rScale(item) + 0.03] : [0, 0, 0]
-                  }
-                />
-              </React.Fragment>
-            );
-          })}
-          <OrbitControls
-            enableZoom
-            maxDistance={12}
-            maxPolarAngle={Math.PI}
-            enableDamping
-          />
-        </Canvas>
-          ) : (
-            <Typography variant='h2'>
-              Try this app on firefox for the full experience!
-            </Typography>
+        <div
+          style={{
+            height: "600px",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
+            flexDirection: "column",
+          }}
+        >
+          {!songData && (
+            <div style={{display:'flex',flexDirection:'column',alignContent:'center'}}>
+              <Typography variant="h1">Loading...</Typography>
+              <Typography variant="caption">(this generally takes 5-10 seconds)</Typography>
+            </div>
           )}
-          <audio
-            id="detailAudioPlayer"
-            controls
-            crossOrigin="anonymous"
-            src={song.preview_url}
-            ref={audioRef as LegacyRef<HTMLAudioElement>}
-          />
+          {songData && isPlaying && (
+            <>
+              <Canvas>
+                <SongDetailSpheres songData={songData} />
+                <OrbitControls
+                  maxZoom={2}
+                  minZoom={0.5}
+                  maxDistance={12}
+                  maxPolarAngle={Math.PI}
+                  enableDamping
+                />
+              </Canvas>
+            </>
+          )}
+          {songData && (
+            <audio
+              ref={audioRef}
+              src={song.preview_url || ""}
+              crossOrigin="anonymous"
+              autoPlay
+              onPlay={() => {
+                setIsPlaying(true);
+              }}
+            />
+          )}
         </div>
       ) : (
         "no audio preview"
       )}
     </div>
   );
+};
+
+export const SongDetailSpheres = (props: {
+  songData: {
+    time: number;
+    notes: FormattedAFData[];
+  }[];
+}) => {
+  const { songData } = props;
+
+  const [time, setTime] = useState(0);
+
+  const maxMagnitude = Math.max(
+    ...songData.map((d) =>
+      Math.max(...d.notes.map((d) => Math.max(...d.map((d) => d.magnitude))))
+    )
+  );
+
+  const getCurrentSongData = (
+    songData: {
+      time: number;
+      notes: FormattedAFData[];
+    }[],
+    elapsedTime: number
+  ) => {
+    const checkTimes = songData.map((d) => d.time);
+    const finalTime = checkTimes[checkTimes.length - 1];
+
+    while (elapsedTime < finalTime) {
+      const currentSongData =
+        songData.find((d) => d.time >= elapsedTime) ?? songData[0];
+      return currentSongData;
+    }
+    return { notes: {}, time: 0 };
+  };
+
+  //update the spheres
+  useFrame((state) => {
+    const { clock, camera } = state;
+    const elapsedMilliseconds = clock.getElapsedTime() * 1000;
+    const currentSongData = getCurrentSongData(songData, elapsedMilliseconds);
+    setTime(currentSongData.time);
+    camera.position.y = Math.sin(state.clock.getElapsedTime()) * 4;
+    camera.position.x = Math.sin(state.clock.getElapsedTime() * 0.3) * 5;
+  }, 0);
+
+  const rScale = scaleLinear().domain([0.01, maxMagnitude/2]).range([0.01, .5]);
+  const yScale = scaleLinear().domain([0, 8]).range([-3, 3]);
+  const fontSizeScale = scaleLinear()
+    .domain([0.01, maxMagnitude])
+    .range([0.01, 1]);
+
+    rScale.clamp(true)
+
+  return songData ? (
+    <>
+      {songData
+        .find((d) => {
+          return d.time >= time;
+        })
+        ?.notes.map((octave, index) => {
+          return octave.map((note, noteIndex) => {
+            const { magnitude, note_name } = note;
+            const noteOctave = index;
+            const {
+              x,
+              y: z,
+              angle,
+            } = noteLocations.find((n) => {
+              return n.note === note.note_name;
+            }) || { x: 0, y: 0, angle: 0 };
+
+            return (
+              <React.Fragment key={`octave${index}-${note_name}-${noteIndex}`}>
+                <mesh position={[x * 2, yScale(noteOctave), z * 2]}>
+                  <sphereGeometry args={[rScale(magnitude), 32, 16]} />
+                  <meshLambertMaterial emissive={`hsl(${angle}, 70%, 60%)`} />
+                </mesh>
+                <BillboardWithText
+                  text={magnitude > 0.6 ? note_name : ""}
+                  position={[x * 3, yScale(noteOctave), z * 3]}
+                  size={fontSizeScale(magnitude)}
+                />
+              </React.Fragment>
+            );
+          });
+        })}
+    </>
+  ) : null;
 };

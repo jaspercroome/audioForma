@@ -1,4 +1,4 @@
-export { Box } from './Box';
-export { SongSpheres } from './Spheres';
-export { BillboardWithText } from './BillboardWithText';
-export {SongDetail} from './SongDetail'
+export { Box } from "./Box";
+export { SongSpheres } from "./SongSpheres";
+export { BillboardWithText } from "./BillboardWithText";
+export { SongDetail } from "./SongDetail";
