@@ -8,24 +8,24 @@ export const requestAuthToken = async () => {
   if (typeof localStorage !== "undefined") {
     if (localStorage.getItem("spotifyAuthToken")) {
       return JSON.parse(localStorage.getItem("spotifyAuthToken") ?? "");
+    } else {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        body:
+          "grant_type=client_credentials&client_id=" +
+          SPOTIFY_CLIENT_ID +
+          "&client_secret=" +
+          SPOTIFY_CLIENT_SECRET,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+      const token = await response.json();
+      if (response.ok) {
+        localStorage.setItem("spotifyAuthToken", JSON.stringify(token));
+      }
+      return token;
     }
-  } else {
-    const response = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      body:
-        "grant_type=client_credentials&client_id=" +
-        SPOTIFY_CLIENT_ID +
-        "&client_secret=" +
-        SPOTIFY_CLIENT_SECRET,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
-    const token = await response.json();
-    if (response.ok) {
-      localStorage.setItem("spotifyAuthToken", JSON.stringify(token));
-    }
-    return token;
   }
 };
 
