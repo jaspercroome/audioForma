@@ -18,24 +18,33 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
+
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const {
-    data: songData,
-    isLoading,
-    isError,
-    error: afMicroServiceError,
-  } = useAfMicroServicePost(previewId);
+  const { data: songData } = useAfMicroServicePost(previewId);
 
   useEffect(() => {
-    if (isLoading) {
-      console.log("loading data from af microservice");
-    } else if (isError) {
-      console.error(afMicroServiceError);
-    } else if (songData) {
-      console.log("loaded!");
+    if (window) {
+      window.innerWidth > 800 && setDevice("desktop");
     }
-  }, [isLoading, isError, afMicroServiceError, songData]);
+  });
+
+  const [detailState, setDetailState] = useState<
+    "loading" | "loaded" | "playing"
+  >("loading");
+
+  useEffect(() => {
+    if (songData) {
+      if (isPlaying) {
+        setDetailState("playing");
+      } else {
+        setDetailState("loaded");
+      }
+    } else {
+      setDetailState("loading");
+    }
+  }, [audioRef, songData, isPlaying]);
 
   return (
     <div style={{ padding: "0px 16px 0px 16px" }}>
@@ -53,13 +62,49 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
             flexDirection: "column",
           }}
         >
-          {!songData && (
-            <div style={{display:'flex',flexDirection:'column',alignContent:'center'}}>
-              <Typography variant="h1">Loading...</Typography>
-              <Typography variant="caption">(this generally takes 5-10 seconds)</Typography>
+          {detailState === "loading" && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignContent: "center",
+              }}
+            >
+              <Typography variant="h4">Loading...</Typography>
+              <Typography variant="caption">
+                (this generally takes 5-10 seconds)
+              </Typography>
             </div>
           )}
-          {songData && isPlaying && (
+          {(['loaded','playing'].includes(detailState)) && (
+            <audio
+              ref={audioRef}
+              src={song.preview_url || ""}
+              crossOrigin="anonymous"
+              onPlay={() => {
+                setDetailState('playing')
+                setIsPlaying(true);
+              }}
+            />
+          )}
+          {detailState === "loaded" && device === "mobile" && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignContent: "center",
+              }}
+              onClick={() => {
+                audioRef.current?.play();
+                setDetailState('playing')
+              }}
+            >
+              <Typography variant="h4">
+                Tap here to play a 30s sample
+              </Typography>
+            </div>
+          )}
+          {(songData && audioRef.current?.play()) &&  (
             <>
               <Canvas>
                 <SongDetailSpheres songData={songData} />
@@ -72,17 +117,6 @@ export const SongDetail = (props: { song: SongJSON[string] }) => {
                 />
               </Canvas>
             </>
-          )}
-          {songData && (
-            <audio
-              ref={audioRef}
-              src={song.preview_url || ""}
-              crossOrigin="anonymous"
-              autoPlay
-              onPlay={() => {
-                setIsPlaying(true);
-              }}
-            />
           )}
         </div>
       ) : (
@@ -136,13 +170,15 @@ export const SongDetailSpheres = (props: {
     camera.position.x = Math.sin(state.clock.getElapsedTime() * 0.3) * 5;
   }, 0);
 
-  const rScale = scaleLinear().domain([0.01, maxMagnitude/2]).range([0.01, .5]);
+  const rScale = scaleLinear()
+    .domain([0.01, maxMagnitude / 2])
+    .range([0.01, 0.5]);
   const yScale = scaleLinear().domain([0, 8]).range([-3, 3]);
   const fontSizeScale = scaleLinear()
     .domain([0.01, maxMagnitude])
     .range([0.01, 1]);
 
-    rScale.clamp(true)
+  rScale.clamp(true);
 
   return songData ? (
     <>

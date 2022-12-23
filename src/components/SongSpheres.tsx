@@ -71,7 +71,7 @@ export const SongSpheres = (props: SpheresProps) => {
     popularity: number;
   }) => {
     const { valence, danceability, energy, popularity } = values;
-    return hsl(danceability * valence * energy * 360, 0.5, 0.5).toString();
+    return hsl(danceability * valence * energy * 360, 0.7, 0.5).toString();
     // return rgb(255*valence,255*danceability,255*energy,1).toString()
   };
 
@@ -139,18 +139,17 @@ export const SongSpheres = (props: SpheresProps) => {
               zScale(thisSong.energy)
             );
             // setLookAtTarget(vector);
-            console.log(songArray[index]);
             onClick(songArray[index]);
           } else onClick(undefined);
         }}
       >
-        <sphereGeometry args={[0.15, 32, 32]}>
+        <sphereGeometry args={[0.15, 64, 64]}>
           <instancedBufferAttribute
             attach="attributes-color"
             args={[colorArray, 3]}
           />
         </sphereGeometry>
-        <meshBasicMaterial vertexColors />
+        <meshLambertMaterial vertexColors />
       </a.instancedMesh>
       {hoveredSong && (
         <>
